@@ -1,0 +1,169 @@
+* {
+    outline-width: 1px;
+    outline-color: #3584e4;
+}
+
+comboboxtext,
+filechooserbutton,
+button,
+spinbutton,
+searchentry,
+entry {
+    border-radius: 3px;
+}
+
+.white-bg {
+    background-color: #fff;
+}
+
+.grey-text {
+    color: #888888;
+}
+
+.read-str {
+    font-size: 1.7em;
+}
+
+.textview-border {
+    border: 1px solid #e6edfa;
+}
+
+notebook header > tabs > tab {
+    background-image: none;
+    background-color: transparent;
+    border-style: solid;
+
+    border-image-width: 0 1px;
+    box-shadow: none;
+
+    border-right: #ccc solid 1px;
+    margin: 0;
+    padding: 0;
+}
+
+notebook header > tabs > tab > label {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+notebook header > tabs > tab:checked {
+    outline-width: 0;
+    background-color: #ffffff;
+}
+
+notebook header {
+    margin: 0;
+    padding: 0;
+    border-bottom: 0;
+    background-color: #e1dedb;
+}
+
+notebook header > tabs {
+    margin: 0;
+    padding: 0;
+}
+
+treeview.view {
+    outline-width: 0;
+    border-top-color: #e6edfa;
+}
+
+treeview button,
+treeview spinbutton,
+treeview entry {
+    border-radius: 0
+}
+
+.not-link {
+    text-decoration: none;
+}
+
+.novel-title {
+    font-size: 2em;
+}
+
+.bold {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.detail-header {
+    font-weight: bold;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e6edfa;
+}
+
+.detail-header-small {
+    font-weight: bold;
+}
+
+.settings-title {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.settings-header {
+    font-weight: bold;
+}
+
+.settings-notebook {
+    background-color: #f8f8f7;
+}
+
+.settings-listbox {
+    border: 1px solid #ddd;
+}
+
+.reader {
+    background-color: #f4ecd8;
+}
+
+.reader-content {
+    font-size: 28px;
+    font-family: Microsoft YaHei;
+}
+
+.reader-content text {
+    background-color: #f4ecd8;
+    color: #111111;
+}
+
+.selection-listbox {
+    border: 1px solid #ddd;
+    border-right-width: 0;
+}
+
+treeview.view :selected {
+    color: #000000;
+    background-color: rgba(43, 149, 255, 0.3);
+}
+
+.novel-image {
+    border: 1px solid #cdc7c2;
+}
+
+menuitem check {
+    border: 0;
+    padding: 0 6px 0 0;
+}
+
+.update-btn {
+    padding: 0;
+    margin: 0;
+    font-size: 8px;
+}
+
+.menu-bar-box {
+    border-bottom: 1px solid #dedddc;
+}
+
+.menu-bar {
+    box-shadow: none;
+}
+
+#thin-link-btn {
+    padding: 0;
+    margin: 0;
+}

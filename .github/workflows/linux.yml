@@ -1,0 +1,47 @@
+name: Linux
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  linux:
+    strategy:
+      matrix:
+        toolchain: [stable]
+        type: [release]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{matrix.toolchain}}
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            target
+          key: linux-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            linux-${{github.ref}}-${{github.sha}}
+
+      - name: Install gtk3
+        run: sudo apt-get update; sudo apt install libgtk-3-dev -y
+
+      - name: Build Release
+        run: cargo build --release --bin eris
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0 -D warnings"
+        if: ${{matrix.type == 'release'}}
+
+      - name: Store Linux
+        uses: actions/upload-artifact@v2
+        with:
+          name: eris-${{runner.os}}-${{matrix.toolchain}}
+          path: target/release/eris
+        if: ${{matrix.type == 'release'}}

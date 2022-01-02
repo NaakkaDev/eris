@@ -1,0 +1,12 @@
+index.theme
+icon-theme.cache
+pan-down-symbolic
+pan-up-symbolic
+edit-find-symbolic
+document-open-symbolic
+image-missing
+list-add-symbolic
+list-remove-symbolic
+dnd-move
+dnd-none
+edit-clear-symbolic

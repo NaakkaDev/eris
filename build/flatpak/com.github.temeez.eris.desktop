@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Terminal=false
+Exec=eris
+Name=Eris
+Comment=Eris is written in Rust and is for keeping track of your webnovel reading progress.
+Icon=com.github.temeez.eris
+Categories=System;
+StartupWMClass=eris
+TryExec=eris

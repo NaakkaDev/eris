@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>com.github.temeez.eris</id>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>MIT</project_license>
+    <name>Eris</name>
+    <summary>Keeps track of your webnovel reading progress.</summary>
+    <description>
+        <p>Eris is written in Rust and is for keeping track of your webnovel reading progress.</p>
+    </description>
+    <screenshots>
+        <screenshot type="default">
+            <image>TODO</image>
+            <caption>Main Window</caption>
+        </screenshot>
+    </screenshots>
+    <launchable type="desktop-id">com.github.temeez.eris.desktop</launchable>
+    <url type="homepage">https://github.com/temeez/eris</url>
+    <url type="bugtracker">https://github.com/temeez/eris/issues</url>
+    <content_rating type="oars-1.0" />
+    <releases>
+        <release version="1.0.0" date="2021-12-31">
+            <description>
+                <p>First release of Eris.</p>
+            </description>
+        </release>
+    </releases>
+    <kudos>
+        <kudo>ModernToolkit</kudo>
+        <kudo>HiDpiIcon</kudo>
+    </kudos>
+    <developer_name>Teemu</developer_name>
+</component>

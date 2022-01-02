@@ -1,0 +1,42 @@
+name: MacOS
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  macos:
+    strategy:
+      matrix:
+        toolchain: [stable]
+        type: [release]
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{matrix.toolchain}}
+          override: true
+
+      - name: Install Homebrew
+        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Install gtk3
+        run: brew install rust gtk+3
+
+      - name: Build release
+        run: cargo build --release --bin eris
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0 -D warnings"
+        if: ${{matrix.type == 'release'}}
+
+      - name: Store MacOS release
+        uses: actions/upload-artifact@v2
+        with:
+          name: eris-${{runner.os}}-${{matrix.toolchain}}
+          path: target/release/eris
+        if: ${{matrix.type == 'release'}}

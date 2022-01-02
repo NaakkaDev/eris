@@ -1,0 +1,68 @@
+[package]
+name = "eris"
+version = "1.0.0"
+authors = ["Teemu <temeez.dev@gmail.com>"]
+edition = "2021"
+description = "Webnovel tracker"
+build = "src/build.rs"
+repository = "https://github.com/Temeez/eris/"
+
+[profile.release]
+lto = true
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.10"
+
+[build-dependencies]
+winres = "0.1"
+
+[dependencies]
+window_titles = { git = "https://github.com/HiruNya/window_titles.git", rev = "924feffac93c9ac7238d6fa5c39c1453815a0408" }
+const_format = "0.2.22"
+dirs = "4.0.0"
+parking_lot = "0.11.1"
+clokwerk = "0.3.4"
+sanitize-filename = "0.3.0"
+chrono = { version = "0.4.19", features = ["serde"] }
+cascade = "1.0.0"
+regex = "1.5"
+rust-embed = "6.2.0"
+epub = { git = "https://github.com/danigm/epub-rs" }
+serde_json = "1.0"
+
+# Encode/Decode
+bincode = "1.3.2"
+serde_derive = "1.0.124"
+serde = { version = "1.0", features = ["derive"] }
+
+# Web
+ureq = { version = "2.3.0", features = ["json"] }
+select = "0.6.0-alpha.1"
+url = "2.2.2"
+slug = "0.1.4"
+webbrowser = "0.5.5"
+
+# Errors
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+log = "0.4"
+fern = "0.6"
+
+# GTK (gui)
+gdk = "*"
+gdk-pixbuf = "*"
+gdk-sys = "*"
+gio = { version = "*" }
+gio-sys = "*"
+glib = "*"
+gtk = { version = "0.14", features = ["v3_24"] }
+
+# i18n
+once_cell = "1.8.0"
+i18n-embed = { version = "0.13.1", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.6.1"
+
+[package.metadata.winres]
+OriginalFilename = "ERIS.EXE"

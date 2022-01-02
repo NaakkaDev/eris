@@ -1,0 +1,58 @@
+name: Windows
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  windows:
+    strategy:
+      matrix:
+        toolchain: [stable]
+        type: [release]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{matrix.toolchain}}
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            target
+          key: windows-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            windows-${{github.ref}}-${{github.sha}}
+
+      - name: Install gtk3, mingw64, unzip, zip and wget
+        run: sudo apt-get update; sudo apt install mingw-w64 libgtk-3-dev unzip zip wget -y
+
+      - name: Build release cc
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+
+          # <3
+          wget https://github.com/qarmin/gtk_library_store/releases/download/3.24.0/mingw64.zip
+          unzip mingw64.zip -d "$(pwd)/mingw64"
+
+          wget https://github.com/Temeez/gtk-icon-debloat/releases/download/1.0.0/gtk-icon-debloat-v1.0.0-x86_64-unknown-linux-gnu.tar.gz
+          tar zxf gtk-icon-debloat-v1.0.0-x86_64-unknown-linux-gnu.tar.gz
+          sudo mv gtk-icon-debloat /usr/local/bin/.
+
+          sh build/windows_gnu.sh
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0 -D warnings"
+        if: ${{matrix.type == 'release'}}
+
+      - name: Store Windows release cc
+        uses: actions/upload-artifact@v2
+        with:
+          name: eris-Windows-${{matrix.toolchain}}
+          path: eris_app.zip
+        if: ${{matrix.type == 'release'}}
