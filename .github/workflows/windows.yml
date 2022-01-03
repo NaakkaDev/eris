@@ -44,7 +44,7 @@ jobs:
           tar zxf gtk-icon-debloat-v1.0.0-x86_64-unknown-linux-gnu.tar.gz
           sudo mv gtk-icon-debloat /usr/local/bin/.
 
-          chmox +x ./build/windows_gnu.sh
+          chmod +x ./build/windows_gnu.sh
           ./build/windows_gnu.sh
         env:
           CARGO_INCREMENTAL: 0
