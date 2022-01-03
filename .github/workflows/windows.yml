@@ -44,7 +44,7 @@ jobs:
           tar zxf gtk-icon-debloat-v1.0.0-x86_64-unknown-linux-gnu.tar.gz
           sudo mv gtk-icon-debloat /usr/local/bin/.
 
-          cd / && find -iname "windres"
+          cd / && sudo find -iname "windres"
           cd ~
 
           chmod +x ./build/windows_gnu.sh
