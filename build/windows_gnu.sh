@@ -1,3 +1,4 @@
+#!/bin/bash
 # Builds the Windows binary and zips it up with other required files
 # for a nice portable solution.
 #
@@ -35,6 +36,13 @@ cp -r "$GTK_LIBRARY"/lib/gdk-pixbuf-2.0 "$APP_DIR"/lib
 
 # Windows build
 PKG_CONFIG_ALLOW_CROSS=1 PKG_CONFIG_PATH="$GTK_LIBRARY/lib/pkgconfig" RUSTFLAGS="-L $GTK_LIBRARY/lib" cargo build --target=x86_64-pc-windows-gnu --bin eris --release
+
+# Fail if eris.exe doesn't exist
+if [[ ! -f "target/x86_64-pc-windows-gnu/release/eris.exe" ]] ; then
+    exit 1
+fi
+
+
 # Strip symbols from binary
 strip target/x86_64-pc-windows-gnu/release/eris.exe
 # Copy build exe file to the bin dir
