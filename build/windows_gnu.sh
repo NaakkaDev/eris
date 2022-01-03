@@ -40,8 +40,7 @@ PKG_CONFIG_ALLOW_CROSS=1 PKG_CONFIG_PATH="$GTK_LIBRARY/lib/pkgconfig" RUSTFLAGS=
 # Fail if eris.exe doesn't exist
 if [[ ! -f "target/x86_64-pc-windows-gnu/release/eris.exe" ]] ; then
     exit 1
-fi
-
+fi  
 
 # Strip symbols from binary
 strip target/x86_64-pc-windows-gnu/release/eris.exe

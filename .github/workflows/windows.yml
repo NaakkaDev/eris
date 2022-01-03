@@ -30,7 +30,10 @@ jobs:
             windows-${{github.ref}}-${{github.sha}}
 
       - name: Install gtk3, mingw64, unzip, zip and wget
-        run: sudo apt-get update; sudo apt install mingw-w64 binutils-mingw-w64-x86-64 libgtk-3-dev unzip zip wget -y; which windres
+        run: |
+          sudo apt-get update
+          sudo apt install mingw-w64 binutils-mingw-w64-x86-64 libgtk-3-dev unzip zip wget -y
+          sudo ln -s /usr/bin/x86_64-w64-mingw32-windres /usr/bin/windres
 
       - name: Build release cc
         run: |
@@ -43,8 +46,6 @@ jobs:
           wget https://github.com/Temeez/gtk-icon-debloat/releases/download/1.0.0/gtk-icon-debloat-v1.0.0-x86_64-unknown-linux-gnu.tar.gz
           tar zxf gtk-icon-debloat-v1.0.0-x86_64-unknown-linux-gnu.tar.gz
           sudo mv gtk-icon-debloat /usr/local/bin/.
-
-          which windres
 
           chmod +x build/windows_gnu.sh
           ./build/windows_gnu.sh
