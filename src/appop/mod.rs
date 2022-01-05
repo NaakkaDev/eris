@@ -132,115 +132,137 @@ impl AppOp {
                             let epub_doc = EpubDoc::new(file_name.clone());
                             // If the epub file is not valid then display
                             // a notification dialog about that
-                            if epub_doc.is_err() {
-                                let dialog = gtk::MessageDialog::new(
-                                    Some(&window.to_owned()),
-                                    DialogFlags::DESTROY_WITH_PARENT,
-                                    MessageType::Warning,
-                                    ButtonsType::Ok,
-                                    &fl!(
-                                        "epub-file-warning",
-                                        err = epub_doc.err().unwrap().to_string()
-                                    ),
-                                );
-                                dialog.show();
-                                dialog.run();
-                                {
-                                    dialog.close();
-                                    return;
-                                }
-                            }
+                            match epub_doc {
+                                Ok(mut doc) => {
+                                    let novel_title = if let Some(t) = doc.mdata("title") {
+                                        t
+                                    } else {
+                                        "?".to_string()
+                                    };
+                                    let authors = if let Some(t) = doc.mdata("creator") {
+                                        t
+                                    } else {
+                                        "?".to_string()
+                                    };
+                                    let genres = if let Some(t) = doc.mdata("genres") {
+                                        t
+                                    } else {
+                                        "?".to_string()
+                                    };
+                                    let page_count = doc.get_num_pages();
 
-                            let mut doc = epub_doc.unwrap();
-                            let novel_title = if let Some(t) = doc.mdata("title") {
-                                t
-                            } else {
-                                "?".to_string()
-                            };
-                            let authors = if let Some(t) = doc.mdata("creator") {
-                                t
-                            } else {
-                                "?".to_string()
-                            };
-                            let genres = if let Some(t) = doc.mdata("genres") {
-                                t
-                            } else {
-                                "?".to_string()
-                            };
-                            let page_count = doc.get_num_pages();
-
-                            let intro_key = doc.resources.iter().find_map(|(k, (kk, _))| {
-                                if kk
-                                    .clone()
-                                    .into_os_string()
-                                    .into_string()
-                                    .unwrap()
-                                    .contains("ntro")
-                                {
-                                    Some(k)
-                                } else {
-                                    None
-                                }
-                            });
-
-                            let mut description = String::new();
-                            if let Some(key) = intro_key {
-                                // If the spine in epub file is missing the intro chapter file
-                                // then add it in if it exists
-                                if !doc.spine.contains(key) {
-                                    doc.spine.insert(0, key.clone());
-                                }
-                                // If page number was found then the description can be populated
-                                if let Some(page) = doc.resource_id_to_chapter(intro_key.unwrap()) {
-                                    // Try to change the page
-                                    match doc.set_current_page(page) {
-                                        Ok(_) => {
-                                            // Could set the current page to the introduction page so
-                                            // get the contents of it
-                                            let intro_text = doc.get_current_str().ok();
-                                            // Hope the content is properly in a body-tag and
-                                            // get the text inside it for the `description` variable
-                                            let html = Document::from(intro_text.unwrap().as_str());
-                                            for body in html.select(Name("body")) {
-                                                description.push_str(body.text().as_str());
+                                    let intro_key =
+                                        doc.resources.iter().find_map(|(k, (kk, _))| {
+                                            if kk
+                                                .clone()
+                                                .into_os_string()
+                                                .into_string()
+                                                .unwrap()
+                                                .contains("ntro")
+                                            {
+                                                Some(k)
+                                            } else {
+                                                None
                                             }
+                                        });
+
+                                    let mut description = String::new();
+                                    if let Some(key) = intro_key {
+                                        // If the spine in epub file is missing the intro chapter file
+                                        // then add it in if it exists
+                                        if !doc.spine.contains(key) {
+                                            doc.spine.insert(0, key.clone());
                                         }
-                                        Err(e) => {
-                                            error!("{}", e);
+                                        // If page number was found then the description can be populated
+                                        if let Some(page) =
+                                            doc.resource_id_to_chapter(intro_key.unwrap())
+                                        {
+                                            // Try to change the page
+                                            match doc.set_current_page(page) {
+                                                Ok(_) => {
+                                                    // Could set the current page to the introduction page so
+                                                    // get the contents of it
+                                                    let intro_text = doc.get_current_str().ok();
+                                                    // Hope the content is properly in a body-tag and
+                                                    // get the text inside it for the `description` variable
+                                                    let html = Document::from(
+                                                        intro_text.unwrap().as_str(),
+                                                    );
+                                                    for body in html.select(Name("body")) {
+                                                        description.push_str(body.text().as_str());
+                                                    }
+                                                }
+                                                Err(e) => {
+                                                    error!("{}", e);
+                                                }
+                                            }
+                                        } else {
+                                            warn!("Intro text was not found in the epub file.");
                                         }
                                     }
-                                } else {
-                                    warn!("Intro text was not found in the epub file.");
+
+                                    // Get cover image data
+                                    let cover_data = if let Ok(cover) = doc.get_cover() {
+                                        Some(cover)
+                                    } else {
+                                        None
+                                    };
+
+                                    // Get cover image extension if it exists
+                                    let cover_ext = if cover_data.is_some() {
+                                        let mime = doc
+                                            .get_resource_mime(&doc.get_cover_id().unwrap())
+                                            .unwrap();
+                                        let cover_ext = if mime.contains("png") {
+                                            "png".to_string()
+                                        } else {
+                                            "jpg".to_string()
+                                        };
+                                        Some(cover_ext)
+                                    } else {
+                                        None
+                                    };
+
+                                    let novel_file = NovelFile {
+                                        novel_string_id: novel_title_to_slug(&novel_title),
+                                        novel_title,
+                                        authors,
+                                        genres,
+                                        description,
+                                        chapters: ReadAmount::new(page_count as f64),
+                                        status_list_id: "0".to_string(),
+                                        slug: None,
+                                        cover_data,
+                                        cover_ext,
+                                    };
+
+                                    app_runtime_clone.update_state_with(move |state| {
+                                        state.add_novel_from_file(
+                                            Path::new(&file_name).to_path_buf(),
+                                            novel_file,
+                                        );
+                                    });
+                                }
+                                Err(e) => {
+                                    let msg = &fl!("epub-file-warning", err = e.to_string());
+                                    // Cannot use the `ui.notification_dialog`
+                                    // because moving `ui` in here is an issue as it is
+                                    // needed afterwards
+                                    let dialog = gtk::MessageDialog::new(
+                                        Some(&window.to_owned()),
+                                        DialogFlags::DESTROY_WITH_PARENT,
+                                        MessageType::Warning,
+                                        ButtonsType::Ok,
+                                        msg,
+                                    );
+                                    dialog.show();
+                                    dialog.run();
+                                    {
+                                        dialog.close();
+                                        return;
+                                    }
                                 }
                             }
-
-                            let cover_data = doc.get_cover().unwrap();
-                            let mime = doc.get_resource_mime(&doc.get_cover_id().unwrap()).unwrap();
-                            let cover_ext = if mime.contains("png") {
-                                "png".to_string()
-                            } else {
-                                "jpg".to_string()
-                            };
-
-                            let novel_file = NovelFile {
-                                novel_string_id: novel_title_to_slug(&novel_title),
-                                novel_title,
-                                authors,
-                                genres,
-                                description,
-                                chapters: ReadAmount::new(page_count as f64),
-                                status_list_id: "0".to_string(),
-                                slug: None,
-                                cover_data: Some(cover_data.clone()),
-                                cover_ext: Some(cover_ext),
-                            };
-
-                            app_runtime_clone.update_state_with(move |state| {
-                                state.add_novel_from_file(
-                                    Path::new(&file_name).to_path_buf(),
-                                    novel_file,
-                                );
-                            });
                         }
                         "json" => {
                             app_runtime_clone.update_state_with(move |state| {

@@ -97,6 +97,16 @@ i18n(pl): Improvements to Polish language support
 
 Translation files can be found [here](./i18n/). Eris uses [Project Fluent](https://projectfluent.org) for the translations, which should be easier than working with gettext.
 
+### Adding new translation
+Just copy any available languge directory in `/i18n/` and rename it.
+Then start editing the eris.ftl file inside.
+
+### Testing
+Testing new translation locally requires the ability to compile Eris.
+After successfully compiling Eris with the new translation it can be selected in the app settings.
+
+There is also a [test_fluent.py](https://raw.githubusercontent.com/Temeez/scripts/main/python3/test_fluent.py) python 3 script which can be useful. 
+
 ### Supported Languages
 - [English](./i18n/en/)
 

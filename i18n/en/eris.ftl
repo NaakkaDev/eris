@@ -116,8 +116,6 @@ settings-app-mrc = Mouse right click
 settings-app-mb4 = Mouse button 4 click
 settings-app-mb5 = Mouse button 5 click
 settings-app-list-columns-title = Novel list visible columns
-settings-app-availability = Availability
-settings-app-last-update = Last update
 settings-app-interface = Interface
 settings-app-startup-title = Startup
 settings-app-system-title = System
@@ -126,7 +124,6 @@ settings-app-language-hint = Requires a restart
 settings-app-window-state = Window state system
 settings-app-reader = Reader software
 settings-app-arguments = Launch arguments
-settings-app-arguments-info = '%f = epub file\n%p = page number'
 settings-reg-basic-title = Basic
 settings-rec-behavior = Behavior
 settings-reg-advanced-title = Advanced
@@ -141,7 +138,6 @@ settings-rec-when-not = When novel is not recognized
 settings-list-behavior-text = First novel info tab to show
 
 settings-data-dir = Data directory location
-settings-data-open-button = Open directory
 
 windows-auto-startup = Start automatically with Windows
 windows-start-minimized = Start minimized
@@ -210,9 +206,7 @@ new-novel-reading-url = Reading URL
 reading-status = Reading status
 volumes-read = Volumes read
 chapters-read = Chapters read
-part-read = Part read
 side-stories-read = Side stories read
-specials-read = Specials read
 new_rec_keywords = Recognition keywords (comma separated)
 
 
@@ -221,7 +215,6 @@ new_rec_keywords = Recognition keywords (comma separated)
 #
 title-label = Title
 chapters-available = Chapters available
-reading-status = Reading status
 novel-url = Novel URL
 update-from-url-checkbutton = Update from URL
 
@@ -244,4 +237,3 @@ chapter = Chapter
 chapters = Chapters
 side-stories = Side stories
 side-story = Side story
-other = other
