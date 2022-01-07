@@ -17,8 +17,11 @@ use url::Url;
 #[derive(Debug)]
 pub struct NovelDialog {
     pub dialog: Dialog,
+    // Notebook that shows either the readable info or editable info
     pub notebook: gtk::Notebook,
+    // Notebook with the actual content
     pub info_notebook: gtk::Notebook,
+    pub edit_notebook: gtk::Notebook,
     pub status_combobox: gtk::ComboBoxText,
     pub novel_status_combobox: gtk::ComboBoxText,
     pub novel_type_combobox: gtk::ComboBoxText,
@@ -150,6 +153,7 @@ impl NovelDialog {
 
         let notebook = builder.get::<gtk::Notebook>("novel_dialog_notebook");
         let info_notebook = builder.get::<gtk::Notebook>("novel_info_notebook");
+        let edit_notebook = builder.get::<gtk::Notebook>("novel_edit_notebook");
         let list_status_comboboxtext = builder.get::<gtk::ComboBoxText>("list_status_comboboxtext");
         let novel_status_comboboxtext =
             builder.get::<gtk::ComboBoxText>("novel_setting_status_edit");
@@ -191,6 +195,7 @@ impl NovelDialog {
             dialog,
             notebook,
             info_notebook,
+            edit_notebook,
             status_combobox: list_status_comboboxtext,
             novel_status_combobox: novel_status_comboboxtext,
             novel_type_combobox,

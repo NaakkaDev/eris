@@ -319,6 +319,7 @@ dependencies = [
  "gtk",
  "i18n-embed",
  "i18n-embed-fl",
+ "lazy_static",
  "log",
  "once_cell",
  "parking_lot",

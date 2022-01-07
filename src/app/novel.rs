@@ -3,9 +3,11 @@ use crate::ui::novel_list::ListStatus;
 use crate::utils::Resources;
 use chrono::prelude::*;
 use gdk_pixbuf::Pixbuf;
+use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
+use std::ops::Index;
 use std::path::PathBuf;
 use std::str::FromStr;
 use url::Url;
@@ -111,11 +113,13 @@ impl FromStr for NovelType {
     type Err = ();
 
     fn from_str(input: &str) -> Result<NovelType, Self::Err> {
-        match input {
-            "Web Novel" => Ok(NovelType::WebNovel),
-            "Light Novel" => Ok(NovelType::LightNovel),
-            _ => Ok(NovelType::Other),
+        if input.contains("Web Novel") {
+            return Ok(NovelType::WebNovel);
+        } else if input.contains("Light Novel") {
+            return Ok(NovelType::LightNovel);
         }
+
+        Ok(NovelType::Other)
     }
 }
 
@@ -172,15 +176,17 @@ impl NovelContentAmount {
     }
 
     pub fn from_string(value: String) -> NovelContentAmount {
-        let re_vol = Regex::new(r"v(\d+)").unwrap();
-        let re_ch = Regex::new(r"c(\d+(?:\.\d+)?)").unwrap();
-        let re_ss = Regex::new(r"ss(\d+)").unwrap();
+        lazy_static! {
+            static ref RE_VOL: Regex = Regex::new(r"v(\d+)").unwrap();
+            static ref RE_CH: Regex = Regex::new(r"c(\d+(?:\.\d+)?)").unwrap();
+            static ref RE_SS: Regex = Regex::new(r"ss(\d+)").unwrap();
+        }
 
         let value_lower = value.to_lowercase();
 
-        let vol_captures = re_vol.captures(&value_lower);
-        let ch_captures = re_ch.captures(&value_lower);
-        let ss_captures = re_ss.captures(&value_lower);
+        let vol_captures = RE_VOL.captures(&value_lower);
+        let ch_captures = RE_CH.captures(&value_lower);
+        let ss_captures = RE_SS.captures(&value_lower);
 
         let volume = if let Some(capture) = vol_captures {
             capture.get(1).unwrap().as_str().parse().unwrap_or(0)
@@ -497,11 +503,23 @@ impl NovelSettings {
 
         let mut segments = { url.path_segments().map(|c| c.collect::<Vec<_>>()).unwrap() };
 
+        // Use regex to find potential chapter number in the url string
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"-\d+").unwrap();
+        }
+
+        let caps = RE.captures(url_string);
+        let pattern = if let Some(cap) = caps {
+            cap.index(cap.len() - 1).to_string()
+        } else {
+            "ch-".to_string()
+        };
+
         // Try to find the index for the correct vector item
         // so it can be later changed.
         let index = segments
             .iter()
-            .position(|s| s.contains(&"chapter-") || s.contains(&"ch-"));
+            .position(|s| s.contains(&"chapter-") || s.contains(&pattern));
 
         if let Some(idx) = index {
             let chapter_segment = segments[idx];

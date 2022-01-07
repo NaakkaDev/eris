@@ -1921,7 +1921,7 @@ Will override any manual edits made to the novel information.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkNotebook" id="novel_info_notebook1">
+                      <object class="GtkNotebook" id="novel_edit_notebook">
                         <property name="width-request">660</property>
                         <property name="height-request">475</property>
                         <property name="visible">True</property>

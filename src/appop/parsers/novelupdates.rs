@@ -160,7 +160,7 @@ impl ParseNovel for NovelUpdates {
     fn parse_type(&self) -> NovelType {
         let novel_type = self
             .document
-            .select(Attr("id", "showtype").descendant(Name("a")))
+            .select(Attr("id", "showtype"))
             .next()
             .unwrap()
             .text();

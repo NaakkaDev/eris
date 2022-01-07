@@ -352,6 +352,17 @@ impl UI {
         self.main_notebook.set_current_page(Some(1));
     }
 
+    /// Show next notebook page of the current notebook..
+    pub fn hotkey_next_active_list(&mut self) {
+        if self.main_notebook.page() == 1 {
+            if self.list_notebook.page() == 4 {
+                self.list_notebook.set_page(0);
+            } else {
+                self.list_notebook.next_page();
+            }
+        }
+    }
+
     /// Show history notebook page.
     pub fn show_history(&self) {
         let history_listboxrow = self.builder.get::<gtk::ListBoxRow>("history_listboxrow");

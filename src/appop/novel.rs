@@ -696,7 +696,11 @@ impl AppOp {
             for novel in novels {
                 // Check if the novel is in db by their title first
                 // then by their possible window titles if any
-                if novel.title.to_lowercase() == window_title.to_lowercase() {
+                if novel.title.to_lowercase() == window_title.to_lowercase()
+                    || window_title
+                        .to_lowercase()
+                        .contains(&novel.title.to_lowercase())
+                {
                     return Some(novel.clone());
                 } else if let Some(window_titles) = &novel.settings.window_titles {
                     if window_titles.iter().any(|i| i == window_title)

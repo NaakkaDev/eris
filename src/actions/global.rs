@@ -23,6 +23,7 @@ pub fn new(appop: &AppOp) {
     let export_db = SimpleAction::new("export_db", None);
     let export_history = SimpleAction::new("export_history", None);
     let update_menu = SimpleAction::new("update_menu", None);
+    let switch_active_novel_list = SimpleAction::new("switch_list", None);
 
     app.add_action(&about);
     app.add_action(&quit);
@@ -39,9 +40,15 @@ pub fn new(appop: &AppOp) {
     app.add_action(&export_db);
     app.add_action(&export_history);
     app.add_action(&update_menu);
+    app.add_action(&switch_active_novel_list);
 
     app.set_accels_for_action("app.toggle_maximize", &["F11"]);
     app.set_accels_for_action("app.select_search_entry", &["<Primary>F"]);
+    app.set_accels_for_action("app.switch_list", &["<Primary>Tab"]);
+
+    switch_active_novel_list.connect_activate(glib::clone!(@strong app_runtime => move |_, _| {
+        app_runtime.update_state_with(|state| state.ui.hotkey_next_active_list());
+    }));
 
     about.connect_activate(glib::clone!(@strong app_runtime => move |_, _| {
         app_runtime.update_state_with(|state| state.ui.about_dialog());
