@@ -67,6 +67,8 @@ Running the binary file should work after the required package(s) are installed.
 ### MacOS
 Good luck.
 
+`osascript` is required for novel recognition.
+
 ### Other
 Good luck. This is my last one so I am all out now.
 

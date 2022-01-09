@@ -126,7 +126,7 @@ impl AppOp {
                     match Path::new(&file_name)
                         .extension()
                         .and_then(OsStr::to_str)
-                        .unwrap()
+                        .unwrap_or_else(|| "")
                     {
                         "epub" => {
                             let epub_doc = EpubDoc::new(file_name.clone());
