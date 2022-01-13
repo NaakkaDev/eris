@@ -23,9 +23,11 @@ use std::io::{BufWriter, Write};
 use std::mem;
 use std::path::PathBuf;
 use std::process::Command;
+use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 use ureq::{Agent, Error};
+use url::Url;
 
 impl AppOp {
     /// Updates the content read count in db and UI.
@@ -257,7 +259,7 @@ impl AppOp {
         url: [String; 2],
         list_state: String,
         content_read: NovelContentAmount,
-        reading_url: String,
+        reading_url_str: String,
         keywords: Option<Vec<String>>,
         score: String,
     ) {
@@ -313,6 +315,12 @@ impl AppOp {
                     return;
                 }
 
+                let reading_url = if let Ok(url) = Url::from_str(&reading_url_str) {
+                    Some(url.to_string())
+                } else {
+                    None
+                };
+
                 if let Some(mut novel) = novel_parser.parse(document, &url) {
                     // Add the novel settings
                     novel.settings = NovelSettings {
@@ -321,7 +329,7 @@ impl AppOp {
                         notes: None,
                         score,
                         rereading: false,
-                        reading_url: Some(reading_url),
+                        reading_url,
                         window_titles: keywords,
                         file: None,
                         last_updated: Local::now().timestamp(),
@@ -925,7 +933,10 @@ impl AppOp {
     ///
     /// If neither is set then show the reading url entry with focus.
     pub fn read_novel(&mut self, novel: Novel) {
-        debug!("appop::read_novel | {:?}", novel.settings.file);
+        debug!(
+            "appop::read_novel | {:?} | {:?}",
+            novel.settings.file, novel.settings.reading_url
+        );
         if let Some(reader_file) = novel.settings.file.as_ref() {
             let page = novel.settings.content_read.chapters;
             // Epub file set, opening it with external reader

@@ -52,7 +52,7 @@ column-detail = Detail
 action-nothing = Nothing
 action-open-novel-info = Open novel info
 action-edit-novel-info = Edit novel info
-action-read = Read
+action-read-next = Read next chapter
 action-increase-chapter-count = Increase chapter read count
 action-decrease-chapter-count = Decrease chapter read count
 action-open-context-menu = Open context menu
@@ -68,7 +68,6 @@ novel-info = Novel Information
 open-settings = Open settings
 
 menu-open-edit = Open/Edit
-menu-read = Read
 menu-open-webpage = Open webpage
 
 

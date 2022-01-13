@@ -9,7 +9,6 @@ use gdk::pango::WrapMode;
 use gtk::gdk_pixbuf::Pixbuf;
 use gtk::prelude::*;
 use gtk::{Align, IconSize, Orientation};
-use url::Url;
 
 impl UI {
     pub fn show_reading_not(&self) {
@@ -130,7 +129,7 @@ impl UI {
         let reading_novel_description_text = self
             .builder
             .get::<gtk::TextView>("reading_novel_description_text");
-        let reading_novel_slug = self.builder.get::<gtk::LinkButton>("reading_novel_slug");
+        let reading_novel_slug = self.builder.get::<gtk::Label>("reading_novel_slug");
         let novel_not_found_box = self.builder.get::<gtk::Box>("novel_not_found_box");
         let reading_type = self.builder.get::<gtk::Label>("reading_type");
         let reading_grid = self.builder.get::<gtk::Grid>("reading_grid");
@@ -205,14 +204,13 @@ impl UI {
             }
 
             if let Some(slug) = &novel.slug {
-                let source = if let Ok(url) = Url::parse(slug) {
-                    url.domain().unwrap_or("").to_string()
-                } else {
-                    "".to_string()
-                };
+                // let source = if let Ok(url) = Url::parse(slug) {
+                //     url.domain().unwrap_or("").to_string()
+                // } else {
+                //     "".to_string()
+                // };
 
-                reading_novel_slug.set_uri(slug);
-                reading_novel_slug.set_label(&source);
+                reading_novel_slug.set_markup(&format!("<a href='{}'>{}</a>", slug, slug));
             }
         } else {
             novel_not_found_box.set_visible(true);

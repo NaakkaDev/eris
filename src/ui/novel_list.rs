@@ -890,7 +890,7 @@ fn list_actions(
                 action_open_novel_dialog(app_runtime, tree, path, treeview_index, true);
             }
         }
-        NovelListAction::Read => {
+        NovelListAction::ReadNext => {
             action_read_novel(app_runtime, tree);
         }
         NovelListAction::IncreaseChapterCount => {
@@ -1010,7 +1010,7 @@ pub fn action_open_menu(
         });
     }));
     let menuitem_read = gtk::MenuItem::new();
-    menuitem_read.set_label(&fl!("menu-read"));
+    menuitem_read.set_label(&fl!("action-read-next"));
     menuitem_read.connect_activate(
         glib::clone!(@strong app_runtime, @strong novel_id => move |_| {
             let novel_id = novel_id.clone();

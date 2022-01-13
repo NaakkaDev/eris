@@ -203,17 +203,9 @@ impl NewNovelDialog {
         let source = reading_novel_source_label.text().to_string();
         let novel_parser = NovelParser::from_str(source.as_str()).unwrap();
 
+        // Change the combobox selection based on the source
+        // and default to novelupdates one
         match novel_parser {
-            NovelParser::NovelUpdates => {
-                url_combobox_id = Some("1");
-                // Try to guess the correct slug from the novel title
-                slug.push_str(&novel_title_to_slug(
-                    &reading_novel_title_label.text().to_string(),
-                ));
-                keyword.push_str(&guess_keyword(
-                    &reading_novel_title_label.text().to_string(),
-                ));
-            }
             NovelParser::RoyalRoad => {
                 url_combobox_id = Some("2");
             }
@@ -221,11 +213,18 @@ impl NewNovelDialog {
                 url_combobox_id = Some("3");
             }
             _ => {
-                if reading_novel_title_label.text().to_string().len() < 8 {
-                    keyword.push_str(&guess_keyword(
-                        &reading_novel_title_label.text().to_string(),
-                    ));
-                }
+                // Try to guess the correct slug from the novel title
+                slug.push_str(&novel_title_to_slug(
+                    &reading_novel_title_label.text().to_string(),
+                ));
+                keyword.push_str(&guess_keyword(
+                    &reading_novel_title_label.text().to_string(),
+                ));
+
+                // Guess the keyword from the novel title
+                keyword.push_str(&guess_keyword(
+                    &reading_novel_title_label.text().to_string(),
+                ));
             }
         }
 
