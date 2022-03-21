@@ -9,6 +9,7 @@ pub mod export_import_json;
 mod novelupdates;
 mod royalroad;
 mod scribblehub;
+mod webnovel;
 
 use crate::app::novel::{Novel, NovelStatus, NovelType};
 use crate::{data_dir, DATA_IMAGE_DIR};
@@ -16,6 +17,7 @@ pub use novelupdates::NovelUpdates;
 pub use royalroad::RoyalRoad;
 pub use scribblehub::ScribbleHub;
 use url::Url;
+pub use webnovel::Webnovel;
 
 /// Supported urls
 #[derive(PartialEq, Debug)]
@@ -24,6 +26,7 @@ pub enum NovelParser {
     NovelUpdates,
     RoyalRoad,
     ScribbleHub,
+    Webnovel,
 }
 
 impl NovelParser {
@@ -37,6 +40,7 @@ impl NovelParser {
                         "www.novelupdates.com" => NovelParser::NovelUpdates,
                         "www.royalroad.com" => NovelParser::RoyalRoad,
                         "www.scribblehub.com" => NovelParser::ScribbleHub,
+                        "www.webnovel.com" => NovelParser::Webnovel,
                         _ => NovelParser::None,
                     };
                 }
@@ -59,6 +63,7 @@ impl NovelParser {
             NovelParser::NovelUpdates => "www.novelupdates.com",
             NovelParser::RoyalRoad => "www.royalroad.com",
             NovelParser::ScribbleHub => "www.scribblehub.com",
+            NovelParser::Webnovel => "www.webnovel.com",
             NovelParser::None => "None",
         }
     }
@@ -68,6 +73,7 @@ impl NovelParser {
             NovelParser::NovelUpdates => NovelUpdates::new(document).parse_novel(slug),
             NovelParser::RoyalRoad => RoyalRoad::new(document).parse_novel(slug),
             NovelParser::ScribbleHub => ScribbleHub::new(document).parse_novel(slug),
+            NovelParser::Webnovel => Webnovel::new(document).parse_novel(slug),
             _ => None,
         }
     }
@@ -81,6 +87,7 @@ impl FromStr for NovelParser {
             "Novel Updates" => Ok(NovelParser::NovelUpdates),
             "Royal Road" => Ok(NovelParser::RoyalRoad),
             "Scribble Hub" => Ok(NovelParser::ScribbleHub),
+            "Webnovel" => Ok(NovelParser::Webnovel),
             _ => Ok(NovelParser::None),
         }
     }
@@ -172,6 +179,8 @@ pub trait ParseNovel {
 ///
 /// Tries to download the cover image file if it doesn't exist.
 fn cover_image_file(url: &str, file_name: &str) -> String {
+    debug!("Cover image url: {:?}", url);
+
     let file_path_str = format!("{}/{}.jpg", DATA_IMAGE_DIR, file_name);
     let file_path = data_dir(&file_path_str);
 

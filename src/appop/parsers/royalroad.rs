@@ -21,7 +21,7 @@ impl ParseNovel for RoyalRoad {
         let novel_id = self.generate_id(&novel_title);
         let image = self.parse_image(&novel_id);
 
-        let content_available = NovelContentAmount {
+        let content = NovelContentAmount {
             chapters: self.parse_chapters(&[]) as f32,
             side_stories: self.parse_side_stories(&[]),
             volumes: self.parse_volumes(&[]),
@@ -52,7 +52,7 @@ impl ParseNovel for RoyalRoad {
             novel_type: self.parse_type(),
             original_language: self.parse_original_language(),
             translated: self.parse_translated(),
-            content_available,
+            content,
             status: self.parse_status(&status_strs),
             year: self.parse_year(),
             original_publisher: self.parse_original_publisher(),
@@ -100,7 +100,7 @@ impl ParseNovel for RoyalRoad {
     fn parse_description(&self) -> String {
         let novel_description_vec = self
             .document
-            .select(Attr("class", "description"))
+            .select(Class("description"))
             .next()
             .unwrap()
             .text()
@@ -129,7 +129,7 @@ impl ParseNovel for RoyalRoad {
 
     fn parse_genre(&self) -> Vec<String> {
         self.document
-            .select(Attr("class", "tags").descendant(Name("a")))
+            .select(Class("tags").descendant(Name("a")))
             .into_iter()
             .map(|node| node.text())
             .collect()
@@ -168,11 +168,13 @@ impl ParseNovel for RoyalRoad {
             .select(Attr("id", "chapters").descendant(Name("time")))
             .next()
             .unwrap()
-            .attr("title")
+            .attr("unixtime")
+            .unwrap()
+            .parse::<i64>()
             .unwrap();
 
-        let dt = NaiveDateTime::parse_from_str(first_chapter_time, "%A, %B %d, %Y %l:%M %p");
-        dt.unwrap().year()
+        let dt = NaiveDateTime::from_timestamp(first_chapter_time, 0);
+        dt.year()
     }
 }
 
@@ -188,11 +190,13 @@ mod tests {
     /// and rename it to be `royalroad.htm` and put it in the project root directory.
     #[test]
     fn test_parser() {
-        if !Path::new("royalroad.htm").exists() {
+        let test_file = "royalroad.html";
+
+        if !Path::new(test_file).exists() {
             return;
         }
 
-        let file = fs::read_to_string("royalroad.htm").expect("Unable to read file");
+        let file = fs::read_to_string(test_file).expect("Unable to read file");
         let document = Document::from(file.as_str());
 
         let novel = NovelParser::RoyalRoad.parse(document, "https://www.roayalroad.com");

@@ -12,6 +12,7 @@ mod settings_dialog;
 
 pub use self::novel_list::NovelList;
 use gdk::gdk_pixbuf::Pixbuf;
+use glib::SignalHandlerId;
 use std::collections::HashMap;
 use std::io::Cursor;
 
@@ -50,6 +51,7 @@ pub struct UI {
     pub settings_dialog: SettingsDialog,
 
     pub url_list: Vec<String>,
+    link_handler: Option<SignalHandlerId>,
 }
 
 impl UI {
@@ -81,11 +83,11 @@ impl UI {
         builder.label_i18n("reading_side_story_label", &(fl!("side-story") + ":"));
         builder.label_i18n("reading_alt_title_label", &fl!("novel-alt-title"));
         builder.label_i18n("reading_details_label", &fl!("novel-details"));
-        builder.label_i18n("reading_author_label", &fl!("novel-author"));
-        builder.label_i18n("reading_artist_label", &fl!("novel-artist"));
-        builder.label_i18n("reading_genre_label", &fl!("novel-genre"));
+        builder.label_i18n("reading_author_label", &(fl!("novel-author") + ":"));
+        builder.label_i18n("reading_artist_label", &(fl!("novel-artist") + ":"));
+        builder.label_i18n("reading_genre_label", &(fl!("novel-genre") + ":"));
         builder.label_i18n("reading_description_label", &fl!("novel-description"));
-        builder.label_i18n("reading_source_label", &fl!("novel-source"));
+        builder.label_i18n("reading_source_label", &(fl!("novel-source") + ":"));
         builder.label_i18n("not_found_label", &fl!("not-found"));
         builder.label_i18n("not_found_suggestion_label", &fl!("not-found-suggestion"));
         builder.label_i18n("previously_read_label", &(fl!("previously-read") + ":"));
@@ -139,6 +141,7 @@ impl UI {
             "https://www.novelupdates.com/series/".to_string(),
             "https://www.royalroad.com/fiction/".to_string(),
             "https://www.scribblehub.com/series/".to_string(),
+            "https://www.webnovel.com/book/".to_string(),
         ];
 
         let new_icon = Resources::get("icons/new_icon.png").unwrap().data;
@@ -169,6 +172,7 @@ impl UI {
             file_new_dialog,
             settings_dialog,
             url_list,
+            link_handler: None,
         }
     }
 
@@ -426,7 +430,7 @@ impl UI {
         let update_btn = self.builder.get::<gtk::Label>("menu_update_label");
 
         update_btn.set_markup(&format!(
-            "<a href='{}'>{}</a>",
+            "<a href=\"{}\">{}</a>",
             UPDATE_LINK,
             &fl!("menu-update")
         ));

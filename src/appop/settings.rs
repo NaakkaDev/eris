@@ -99,6 +99,8 @@ impl AppOp {
         let novel_recognition_delay = builder.get::<gtk::SpinButton>("novel_recognition_delay");
         let novel_recognition_read_preference_combobox =
             builder.get::<gtk::ComboBoxText>("novel_recognition_read_preference_combobox");
+        let novel_recognition_autocomplete_ongoing =
+            builder.get::<gtk::CheckButton>("novel_recognition_autocomplete_ongoing");
         let novel_recognition_title_keywords_entry =
             builder.get::<gtk::Entry>("novel_recognition_title_keywords_entry");
         let novel_recognition_ignore_keywords_entry =
@@ -184,13 +186,15 @@ impl AppOp {
                 .parse::<i32>()
                 .unwrap(),
         );
+        new_settings.novel_recognition.autocomplete_ongoing =
+            novel_recognition_autocomplete_ongoing.is_active();
         new_settings.novel_recognition.when_novel_go_to_reading =
             novel_rec_found_go_to_reading.is_active();
         new_settings.novel_recognition.when_not_novel_go_to_reading =
             novel_rec_not_found_go_to_reading.is_active();
 
         let keywords: String = novel_recognition_title_keywords_entry.text().into();
-        let keyword_vec: Vec<String> = keywords.split(',').map(|t| t.trim().to_string()).collect();
+        let keyword_vec: Vec<String> = keywords.split(',').map(|t| t.to_string()).collect();
 
         let ignore_keywords: String = novel_recognition_ignore_keywords_entry.text().into();
         let ignore_keyword_vec: Vec<String> = ignore_keywords

@@ -45,7 +45,18 @@ impl NovelRecognition {
                     }
                 }
                 for wtitle in &wtitles {
-                    if title.to_lowercase().contains(&wtitle.to_lowercase()) {
+                    if wtitle.contains("<num>") || wtitle.contains("<any>") {
+                        let regex_str = wtitle
+                            .replace("<num>", r"(\d+)")
+                            .replace("<any>", r".?")
+                            .to_string();
+                        if let Ok(re) = Regex::new(&regex_str) {
+                            if let Some(_caps) = re.captures(&title) {
+                                found_title = Some(title);
+                                break 'outer;
+                            }
+                        }
+                    } else if title.to_lowercase().contains(&wtitle.to_lowercase()) {
                         found_title = Some(title);
                         break 'outer;
                     }
@@ -165,7 +176,6 @@ impl AppOp {
             let window_title = window_title.replace("|", "-").replace(".epub", "");
 
             let pattern_index = split_pattern.iter().position(|&p| window_title.contains(p));
-
             if pattern_index.is_none() {
                 return;
             }
@@ -188,7 +198,7 @@ impl AppOp {
                 // Try to extract the novel title from the title strings
                 novel_title = extract_novel_name_from_title(&window_title_str);
                 if novel_title != "?" {
-                    novel = self.get_by_window_title(&novel_title);
+                    novel = self.find_novel_by_window_title(&novel_title);
                 }
             }
 
@@ -342,7 +352,7 @@ impl AppOp {
         // Check if any title string in the list is an exact match
         // with either a novel title or novels recognition keywords
         for title in title_strings {
-            let maybe_novel = self.get_by_window_title(title);
+            let maybe_novel = self.find_novel_by_window_title(title);
             if maybe_novel.is_some() {
                 return maybe_novel;
             }
@@ -352,6 +362,7 @@ impl AppOp {
     }
 }
 
+/// Tries to figure out if a chapter is being read currently
 fn is_reading_chapter(strings: &[&str]) -> bool {
     // Assumed minimum amount of strings in the list
     // when reading a chapter
@@ -369,11 +380,11 @@ fn is_reading_chapter(strings: &[&str]) -> bool {
 
     // If above does not return `true` then check if the title has
     // the word `chapter` in it.
-    if strings
-        .iter()
-        .any(|&s| s.to_lowercase().contains("chapter"))
-    {
-        return true;
+    let patterns = ["chapter", "ch. ", "ch ", "ch-"];
+    for pattern in patterns {
+        if strings.iter().any(|&s| s.to_lowercase().contains(pattern)) {
+            return true;
+        }
     }
 
     false
@@ -412,7 +423,7 @@ fn extract_source_from_title(title_strings: &[&str]) -> String {
         ("firefox", 1),
         ("google", 1),
         ("opera", 1),
-        ("microsoft", 2),
+        ("edge", 2),
         ("brave", 1),
     ];
 
@@ -425,7 +436,13 @@ fn extract_source_from_title(title_strings: &[&str]) -> String {
             // e.g:
             //                       --V--
             // [Foo, Bar, Thing, 12, Source, Browser]
-            return title_strings[title_strings.len() - 1 - *pos].to_string();
+            let mut safe_pos = (title_strings.len() - 1 - *pos) as i32;
+            // Dirty? way to keep the usize above zero to avoid
+            // `index out of bounds: the len is 2 but the index is 18446744073709551615`
+            if safe_pos < 0 {
+                safe_pos = 0;
+            }
+            return title_strings[safe_pos as usize].to_string();
         }
     }
 
@@ -442,315 +459,118 @@ fn extract_source_from_title(title_strings: &[&str]) -> String {
 /// It is assumed that the part number never goes above 9. (What kind of
 /// novel would have so many parts in a chapter anyway.)
 fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
+    let mut ignore_part = false;
     let mut novel_recognition_data =
         NovelRecognitionData::new(0, 0.0, 0, None, "Source".to_string(), false);
 
-    let volume_strings = ["volume", "book", "vol", "v"];
-    let chapter_strings = ["chapter", "ch", "c"];
-    let part_strings = ["part", "pt."];
-    let side_story_strings = ["extra", "side", "special"];
-    let mut ignore_part = false;
+    let volume_res = [
+        r"v(?:ol)?(?:ume)?[\.:;\-_]?\s?(\d+)", // ol or olume or . or : or ; or - or _ or space after `v`
+    ];
 
-    'outer_vol: for title_value in strings {
+    let chapter_res = [
+        r"c(?:h)?(?:apter)?[\.:;\-_]?\s?(\d+)", // h or hapter or . or : or ; or - or _ or space after `c`
+    ];
+
+    let part_res = [
+        r"extra.*?[\.:;\-_story|chapter]\s?[\(]?(\d+)", // e.g: extra story 2 or extra chapter 2
+        r"side.*?[\.:;\-_story|chapter]\s?[\(]?(\d+)",  //
+        r"special.*?[\.:;\-_story|chapter]\s?[\(]?(\d+)", //
+    ];
+
+    for title_value in strings {
         //
         // Find volume number
         //
-        for keyword in volume_strings.iter() {
-            let regex_str = format!(r"{}[^\w]", keyword);
-            let regex_params = Regex::new(&regex_str).unwrap();
-            let title_lower = title_value.to_lowercase();
-            let captures = regex_params.captures(&title_lower);
-
-            if title_value.to_lowercase().contains(keyword)
-                && title_value.contains(' ')
-                && captures.is_some()
-            {
-                // `Volume 1 -> ["Volume", "1"]
-                let split_value: Vec<&str> = title_value.split(' ').map(|s| s.trim()).collect();
-
-                let index = split_value
-                    .iter()
-                    .position(|s| s.to_lowercase().contains(keyword))
-                    .unwrap();
-
-                // Check if the index is the last item in the array
-                let potential_volume_number_index = if index + 1 == split_value.len() {
-                    index - 1
-                } else {
-                    index + 1
-                };
-
-                // Remove all non-digit characters from the potential volume number
-                let volume_num: String = split_value[potential_volume_number_index]
-                    .chars()
-                    .filter(|c| c.is_digit(10))
-                    .collect();
-
-                let potential_volume_num = volume_num.parse::<i32>();
-                if let Ok(vol_num) = potential_volume_num {
-                    novel_recognition_data.volume = vol_num;
-                    break 'outer_vol;
+        for re_pattern in volume_res {
+            let vol_re = Regex::new(re_pattern).unwrap();
+            if let Some(caps) = vol_re.captures(&title_value.to_lowercase()) {
+                let potential_volume = caps.get(1).unwrap().as_str();
+                // Try to parse the volume number str to i32
+                match potential_volume.parse::<i32>() {
+                    Ok(volume_num) => {
+                        novel_recognition_data.volume = volume_num;
+                    }
+                    Err(e) => {
+                        error!("Cannot parse potential volume number to i32 -> {}", e)
+                    }
                 }
-            } else if title_value.to_lowercase().contains(keyword) && captures.is_some() {
-                // `volume2` -> 2
-                let num = title_value
-                    .chars()
-                    .skip_while(|c| !c.is_digit(10))
-                    .take_while(|c| c.is_digit(10))
-                    .fold(None, |acc, c| {
-                        c.to_digit(10).map(|b| acc.unwrap_or(0) * 10 + b)
-                    });
-
-                if let Some(volume) = num {
-                    novel_recognition_data.volume = volume as i32;
-                }
-            } else {
+                // Got a capture so no need to look further as the number
+                // would not change anyway
+                break;
             }
         }
-    }
 
-    'outer_ch: for title_value in strings {
         //
         // Find chapter number
         //
-        for keyword in chapter_strings.iter() {
-            let regex_str = format!(r"{}[^\w]", keyword);
-            let regex_params = Regex::new(&regex_str).unwrap();
-            let title_lower = title_value.to_lowercase();
-            let captures = regex_params.captures(&title_lower);
-            // If the title string contains any of the strings in `chapter_strings`
-            // and the title string also contains a space
-            // and regex capture found a match
-            if title_value.to_lowercase().contains(keyword)
-                && title_value.contains(' ')
-                && captures.is_some()
-            {
-                // `Chapter 1` -> ["Chapter", "1"]
-                let split_value: Vec<&str> = title_value.split(' ').map(|s| s.trim()).collect();
+        for re_pattern in chapter_res {
+            let ch_re = Regex::new(re_pattern).unwrap();
+            if let Some(caps) = ch_re.captures(&title_value.to_lowercase()) {
+                let mut potential_chapter = caps.get(1).unwrap().as_str();
 
-                let index = split_value
-                    .iter()
-                    .position(|s| s.to_lowercase().contains(keyword))
-                    .unwrap();
+                // This if else could be nicer, requires some brainz
+                if potential_chapter.contains('.') {
+                    // Check if the potential float last char is .
+                    // e.g. `12.2.`
+                    let mut potential_float_chars = potential_chapter.chars();
+                    if potential_float_chars.clone().last().unwrap() == '.' {
+                        potential_float_chars.next_back();
+                        potential_chapter = potential_float_chars.as_str();
+                    }
 
-                // Check if the index is the last item in the array
-                let potential_chapter_number_index = if index + 1 == split_value.len() {
-                    index - 1
-                } else {
-                    index + 1
-                };
-
-                // Check if the potential float last char is .
-                // e.g. 12.2.
-                let mut potential_float = split_value[potential_chapter_number_index];
-                let mut potential_float_chars = potential_float.chars();
-                if potential_float_chars.clone().last().unwrap() == '.' {
-                    potential_float_chars.next_back();
-                    potential_float = potential_float_chars.as_str();
-                }
-
-                if potential_float.contains('.') {
-                    // If the potential float is fine then it is probably good
-                    if let Ok(chapter_num) = potential_float.parse::<f32>() {
-                        novel_recognition_data.chapter += chapter_num;
+                    // Probably a float so try to turn it into float and done
+                    // No one will make their chapter number be like `12.0`.. right?
+                    if let Ok(chapter_num) = potential_chapter.parse::<f32>() {
+                        novel_recognition_data.chapter = chapter_num;
                         ignore_part = true;
-                        break 'outer_ch;
+                        break;
+                    }
+                } else {
+                    match potential_chapter.parse::<f32>() {
+                        Ok(chapter_num) => {
+                            novel_recognition_data.chapter = chapter_num;
+                        }
+                        Err(e) => {
+                            error!("Cannot parse potential chapter number to f32 -> {}", e);
+                        }
                     }
                 }
-
-                // Remove all non-digit characters from the potential chapter number
-                let chapter_num: String = split_value[potential_chapter_number_index]
-                    .chars()
-                    .filter(|c| c.is_digit(10))
-                    .collect();
-
-                let potential_chapter_num = chapter_num.parse::<f32>();
-                if let Ok(chap_num) = potential_chapter_num {
-                    novel_recognition_data.chapter += chap_num;
-                    break 'outer_ch;
-                }
-            } else if title_value.to_lowercase().contains(keyword) && captures.is_some() {
-                // `chapter123` -> 123
-
-                let num = title_value
-                    .chars()
-                    .skip_while(|c| !c.is_digit(10))
-                    .take_while(|c| c.is_digit(10))
-                    .fold(None, |acc, c| {
-                        c.to_digit(10).map(|b| acc.unwrap_or(0) * 10 + b)
-                    });
-
-                if let Some(chapter) = num {
-                    novel_recognition_data.chapter += chapter as f32;
-                    break 'outer_ch;
-                }
-            } else {
-                // Try to find the first number
-                // let num = title_value
-                //     .chars()
-                //     .skip_while(|c| !c.is_digit(10))
-                //     .take_while(|c| c.is_digit(10))
-                //     .fold(None, |acc, c| {
-                //         c.to_digit(10).map(|b| acc.unwrap_or(0) * 10 + b)
-                //     });
-                //
-                // if let Some(chapter) = num {
-                //     novel_recognition_data.chapter += chapter as f32;
-                //     break 'outer_ch;
-                // }
+                // Got a capture so no need to look further as the number
+                // would not change anyway
+                break;
             }
         }
-    }
 
-    'outer_pt: for title_value in strings {
         //
         // Find part number
         //
-        if ignore_part {
-            break 'outer_pt;
-        }
+        for re_pattern in part_res {
+            if ignore_part {
+                break;
+            }
+            let part_re = Regex::new(re_pattern).unwrap();
+            if let Some(caps) = part_re.captures(&title_value.to_lowercase()) {
+                let potential_part = caps.get(1).unwrap().as_str();
 
-        for keyword in part_strings.iter() {
-            if keyword == &"(" {
-                let input_re = Regex::new(r"(\(\d+.)").unwrap();
-
-                // Execute the Regex
-                let captures = input_re.captures(title_value).map(|captures| {
-                    captures
-                        .iter()
-                        .skip(1) // Skipping the complete match
-                        .flatten()
-                        .map(|c| c.as_str()) // Grab the original strings
-                        .collect::<Vec<_>>()
-                });
-
-                if let Some(capture) = captures {
-                    let potential_part_num =
-                        capture[0].replace("(", "").replace(")", "").parse::<i32>();
-
-                    if let Ok(part_num) = potential_part_num {
-                        novel_recognition_data.chapter += part_num as f32 / 10.0;
-                        break 'outer_pt;
+                match potential_part.parse::<i32>() {
+                    Ok(part_num) => {
+                        novel_recognition_data.side_story = part_num;
+                    }
+                    Err(e) => {
+                        error!("Cannot parse potential part number to i32 -> {}", e);
                     }
                 }
-            } else {
-                let regex_str = format!(r"{}[^\w]", keyword);
-                let regex_params = Regex::new(&regex_str).unwrap();
-                let title_lower = title_value.to_lowercase();
-                let captures = regex_params.captures(&title_lower);
-
-                // If the title string contains any of the strings in `part_strings`
-                // and the title string also contains a space
-                if title_value.to_lowercase().contains(keyword)
-                    && title_value.contains(' ')
-                    && captures.is_some()
-                {
-                    // `Part 1` -> ["Part", "1"]
-                    let split_value: Vec<&str> = title_value.split(' ').map(|s| s.trim()).collect();
-
-                    let index = split_value
-                        .iter()
-                        .position(|s| s.to_lowercase().contains(keyword))
-                        .unwrap();
-
-                    // Check if the index is the last item in the array
-                    let potential_part_number_index = if index + 1 == split_value.len() {
-                        index - 1
-                    } else {
-                        index + 1
-                    };
-
-                    // Remove all non-digit characters from the potential part number
-                    let part_num: String = split_value[potential_part_number_index]
-                        .chars()
-                        .filter(|c| c.is_digit(10))
-                        .collect();
-
-                    let potential_part_num = part_num.parse::<f32>();
-                    if let Ok(part_num) = potential_part_num {
-                        novel_recognition_data.chapter += part_num as f32 / 10.0;
-                        break 'outer_pt;
-                    }
-                } else if title_value.to_lowercase().contains(keyword) && captures.is_some() {
-                    // `part2` -> 2
-                    let num = title_value
-                        .chars()
-                        .skip_while(|c| !c.is_digit(10))
-                        .take_while(|c| c.is_digit(10))
-                        .fold(None, |acc, c| {
-                            c.to_digit(10).map(|b| acc.unwrap_or(0) * 10 + b)
-                        });
-
-                    if let Some(part_num) = num {
-                        novel_recognition_data.chapter += part_num as f32 / 10.0;
-                    }
-                } else {
-                }
+                // Got a capture so no need to look further as the number
+                // would not change anyway
+                break;
             }
         }
     }
 
-    'outer_side: for title_value in strings {
-        //
-        // Find side story number
-        //
-        for keyword in side_story_strings.iter() {
-            let regex_str = format!(r"{}[^\w]", keyword);
-            let regex_params = Regex::new(&regex_str).unwrap();
-            let title_lower = title_value.to_lowercase();
-            let captures = regex_params.captures(&title_lower);
-
-            // If the title string contains any of the strings in `side_story_strings`
-            // and the title string also contains a space
-            if title_value.to_lowercase().contains(keyword)
-                && title_value.contains(' ')
-                && captures.is_some()
-            {
-                // `Extra Story 1` -> ["Extra", "Story", "1"]
-                let split_value: Vec<&str> = title_value.split(' ').map(|s| s.trim()).collect();
-
-                let index = split_value
-                    .iter()
-                    .position(|s| s.to_lowercase().contains(keyword))
-                    .unwrap();
-
-                // Check if the index is the last item in the array
-                let potential_side_story_number_index = if index + 1 == split_value.len() {
-                    index - 1
-                } else {
-                    index + 1
-                };
-
-                // Remove all non-digit characters from the potential side story number
-                let side_story_num: String = split_value[potential_side_story_number_index]
-                    .chars()
-                    .filter(|c| c.is_digit(10))
-                    .collect();
-
-                let potential_part_num = side_story_num.parse::<i32>();
-                if let Ok(side_story_num) = potential_part_num {
-                    novel_recognition_data.side_story = side_story_num;
-                    break 'outer_side;
-                }
-            } else if title_value.to_lowercase().contains(keyword) && captures.is_some() {
-                // `Extra2` -> 2
-                let num = title_value
-                    .chars()
-                    .skip_while(|c| !c.is_digit(10))
-                    .take_while(|c| c.is_digit(10))
-                    .fold(None, |acc, c| {
-                        c.to_digit(10).map(|b| acc.unwrap_or(0) * 10 + b)
-                    });
-
-                if let Some(side_story_num) = num {
-                    novel_recognition_data.side_story = side_story_num as i32;
-                }
-            } else {
-            }
-        }
-    }
-
-    novel_recognition_data.reading = is_reading_chapter(strings);
+    // Try to guess if currently reading a chapter
+    // novel_recognition_data.reading = is_reading_chapter(strings);
+    // What was the purpose of this thing again?^ hmmm?
+    novel_recognition_data.reading = true;
 
     //
     // Find novel title
@@ -767,6 +587,8 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
         novel_recognition_data.side_story = 0;
         novel_recognition_data.volume = 0;
     }
+
+    debug!("Novel recognition data: {:?}", novel_recognition_data);
 
     novel_recognition_data
 }

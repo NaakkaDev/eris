@@ -567,7 +567,7 @@ impl NovelList {
                     Column::VolumesRead as u32,
                     &novel.settings.content_read.volumes,
                 ),
-                (Column::ChaptersAvailable as u32, &novel.content_available()),
+                (Column::ChaptersAvailable as u32, &novel.content()),
                 (Column::Score as u32, &novel.settings.score),
                 (
                     Column::LastUpdate as u32,
@@ -650,7 +650,7 @@ impl NovelList {
                 Column::VolumesRead as u32,
                 &novel.settings.content_read.volumes,
             ),
-            (Column::ChaptersAvailable as u32, &novel.content_available()),
+            (Column::ChaptersAvailable as u32, &novel.content()),
             (Column::Score as u32, &novel.settings.score),
             (
                 Column::LastUpdate as u32,
@@ -836,7 +836,7 @@ impl NovelList {
             list.set_value(
                 iter,
                 Column::ChaptersAvailable as u32,
-                &novel.content_available().to_value(),
+                &novel.content().to_value(),
             );
             list.set_value(iter, Column::Score as u32, &novel.settings.score.to_value());
             list.set_value(
@@ -867,6 +867,11 @@ impl NovelList {
         }
 
         None
+    }
+
+    /// Does what is says, sometimes.
+    pub fn scroll_to_top(&self, list: ListStatus) {
+        self.trees[list.to_i32()].scroll_to_point(0, 2);
     }
 }
 

@@ -90,6 +90,10 @@ impl SettingsDialog {
             &(fl!("settings-reg-chapter-read-pref") + ":"),
         );
         builder.label_i18n(
+            "settings_reg_autocomplete_ongoing",
+            &(fl!("settings-reg-autocomplete-ongoing") + ":"),
+        );
+        builder.label_i18n(
             "settings_reg_enable_label",
             &(fl!("settings-reg-enable-feature") + ":"),
         );
@@ -150,6 +154,7 @@ impl SettingsDialog {
         builder.checkbutton_i18n("viscol_last", &fl!("column-last-update"));
         builder.checkbutton_i18n("first_tab_always_checkbox", &fl!("first-tab-always"));
         builder.checkbutton_i18n("novel_recognition_enabled_checkbutton", &fl!("yes"));
+        builder.checkbutton_i18n("novel_recognition_autocomplete_ongoing", &fl!("yes"));
         builder.checkbutton_i18n("novel_rec_found_go_to_reading", &fl!("go-to-reading-now"));
         builder.checkbutton_i18n(
             "novel_rec_not_found_go_to_reading",
@@ -318,6 +323,8 @@ impl SettingsDialog {
         let novel_recognition_delay = builder.get::<gtk::SpinButton>("novel_recognition_delay");
         let novel_recognition_read_preference_combobox =
             builder.get::<gtk::ComboBoxText>("novel_recognition_read_preference_combobox");
+        let novel_recognition_autocomplete_ongoing =
+            builder.get::<gtk::CheckButton>("novel_recognition_autocomplete_ongoing");
         let novel_recognition_title_keywords_entry =
             builder.get::<gtk::Entry>("novel_recognition_title_keywords_entry");
         let novel_recognition_found_go_to_reading =
@@ -336,6 +343,8 @@ impl SettingsDialog {
                 .to_string()
                 .as_str(),
         ));
+        novel_recognition_autocomplete_ongoing
+            .set_active(settings.novel_recognition.autocomplete_ongoing);
         novel_recognition_found_go_to_reading
             .set_active(settings.novel_recognition.when_novel_go_to_reading);
         novel_recognition_not_found_go_to_reading

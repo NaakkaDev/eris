@@ -190,7 +190,7 @@ impl FilterList {
                     Column::SideStoriesRead as u32,
                     &novel.settings.content_read.side_stories,
                 ),
-                (Column::ChaptersAvailable as u32, &novel.content_available()),
+                (Column::ChaptersAvailable as u32, &novel.content()),
                 (Column::Score as u32, &novel.settings.score),
                 (
                     Column::LastUpdate as u32,
@@ -218,7 +218,7 @@ impl FilterList {
                 Column::SideStoriesRead as u32,
                 &novel.settings.content_read.side_stories,
             ),
-            (Column::ChaptersAvailable as u32, &novel.content_available()),
+            (Column::ChaptersAvailable as u32, &novel.content()),
             (Column::Score as u32, &novel.settings.score),
             (
                 Column::LastUpdate as u32,
@@ -269,7 +269,7 @@ impl FilterList {
             self.list.set_value(
                 iter,
                 Column::ChaptersAvailable as u32,
-                &novel.content_available().to_value(),
+                &novel.content().to_value(),
             );
             self.list.set_value(
                 iter,
@@ -287,7 +287,7 @@ impl FilterList {
     }
 
     pub fn scroll_to_top(&self) {
-        self.treeview.scroll_to_point(0, 0);
+        self.treeview.scroll_to_point(0, 2);
     }
 
     pub fn find_iter(&self, novel: &Novel) -> Option<gtk::TreeIter> {

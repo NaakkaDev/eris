@@ -134,7 +134,7 @@ impl HistoryList {
 
     /// Does what is says, sometimes.
     pub fn scroll_to_top(&self) {
-        self.treeview.scroll_to_point(0, 0);
+        self.treeview.scroll_to_point(0, 2);
     }
 }
 

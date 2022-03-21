@@ -93,3 +93,11 @@ pub fn nil_str(value: &str) -> String {
 
     value.to_string()
 }
+
+pub fn capitalize_str(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
+}

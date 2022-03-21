@@ -429,7 +429,7 @@ impl NovelDialog {
         }
 
         if let Some(slug) = &novel.slug {
-            novel_source_slug_label.set_markup(&format!("<a href='{}'>{}</a>", slug, slug));
+            novel_source_slug_label.set_markup(&format!("<a href=\"{}\">{}</a>", slug, slug));
 
             let novel_clone = novel.clone();
             let handler = novel_source_slug_label.connect_activate_link(move |_, _| {
@@ -470,8 +470,8 @@ impl NovelDialog {
                 .set_text("-");
         }
 
-        if novel.content_available.side_stories > 0 {
-            novel_setting_sides.set_text(&novel.content_available.side_stories.to_string());
+        if novel.content.side_stories > 0 {
+            novel_setting_sides.set_text(&novel.content.side_stories.to_string());
             novel_setting_sides.set_visible(true);
             novel_side_stories_label.set_visible(true);
         } else {
@@ -479,8 +479,8 @@ impl NovelDialog {
             novel_side_stories_label.set_visible(false);
         }
 
-        if novel.content_available.chapters > 0.0 {
-            novel_setting_chapters.set_text(&novel.content_available.chapters.to_string());
+        if novel.content.chapters > 0.0 {
+            novel_setting_chapters.set_text(&novel.content.chapters.to_string());
             novel_setting_chapters.set_visible(true);
             novel_chapters_label.set_visible(true);
         } else {
@@ -488,8 +488,8 @@ impl NovelDialog {
             novel_chapters_label.set_visible(false);
         }
 
-        if novel.content_available.volumes > 0 {
-            novel_setting_volumes.set_text(&novel.content_available.volumes.to_string());
+        if novel.content.volumes > 0 {
+            novel_setting_volumes.set_text(&novel.content.volumes.to_string());
             novel_setting_volumes.set_visible(true);
             novel_volumes_label.set_visible(true);
         } else {
@@ -622,9 +622,9 @@ impl NovelDialog {
         self.novel_type_combobox
             .set_active_id(Some(&novel.novel_type.to_i32().to_string()));
 
-        novel_setting_side_stories_edit.set_text(&novel.content_available.side_stories.to_string());
-        novel_setting_chapters_edit.set_text(&novel.content_available.chapters.to_string());
-        novel_setting_volumes_edit.set_text(&novel.content_available.volumes.to_string());
+        novel_setting_side_stories_edit.set_text(&novel.content.side_stories.to_string());
+        novel_setting_chapters_edit.set_text(&novel.content.chapters.to_string());
+        novel_setting_volumes_edit.set_text(&novel.content.volumes.to_string());
         novel_setting_year_edit.set_text(&novel.year.to_string());
 
         novel_title_edit.set_text(&novel.title);
@@ -725,25 +725,35 @@ impl NovelDialog {
             .unwrap()
             .to_string()
             .split(',')
+            .filter(|s| !s.is_empty())
             .map(str::to_string)
             .collect::<Vec<String>>();
+
+        let alternative_titles = if !alt_titles.is_empty() {
+            Some(alt_titles)
+        } else {
+            None
+        };
 
         let authors = novel_detail_author_edit
             .text()
             .split(',')
             .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
             .collect();
 
         let artists = novel_detail_artist_edit
             .text()
             .split(',')
             .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
             .collect();
 
         let genres = novel_detail_genre_edit
             .text()
             .split(',')
             .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
             .collect();
 
         let original_publisher = novel_detail_original_publisher_edit
@@ -751,6 +761,7 @@ impl NovelDialog {
             .trim()
             .split(',')
             .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
             .collect();
 
         let english_publisher = novel_detail_english_publisher_edit
@@ -758,6 +769,7 @@ impl NovelDialog {
             .trim()
             .split(',')
             .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
             .collect();
 
         let tags_buffer = novel_tags_edit.buffer().expect("Cannot get buffer");
@@ -807,7 +819,7 @@ impl NovelDialog {
 
         Novel {
             title: novel_title_edit.text().to_string(),
-            alternative_titles: Some(alt_titles),
+            alternative_titles,
             author: authors,
             artist: artists,
             novel_type: NovelType::from_i32(
@@ -831,22 +843,22 @@ impl NovelDialog {
             original_publisher,
             english_publisher,
             slug: Some(slug),
-            content_available: NovelContentAmount {
+            content: NovelContentAmount {
                 volumes: novel_setting_volumes_edit
                     .text()
                     .to_string()
                     .parse::<i32>()
-                    .unwrap_or(novel.content_available.volumes),
+                    .unwrap_or(novel.content.volumes),
                 chapters: novel_setting_chapters_edit
                     .text()
                     .to_string()
                     .parse::<f32>()
-                    .unwrap_or(novel.content_available.chapters),
+                    .unwrap_or(novel.content.chapters),
                 side_stories: novel_setting_side_stories_edit
                     .text()
                     .to_string()
                     .parse::<i32>()
-                    .unwrap_or(novel.content_available.side_stories),
+                    .unwrap_or(novel.content.side_stories),
             },
             status: new_status,
             ..novel.clone()

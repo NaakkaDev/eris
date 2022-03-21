@@ -68,6 +68,8 @@ pub struct NovelRecognitionSettings {
     pub title_keywords: Vec<String>,
     /// Ignore window titles with these words.
     pub ignore_keywords: Vec<String>,
+    /// Allow autocompleting novel with status "ongoing".
+    pub autocomplete_ongoing: bool,
 }
 
 impl Default for NovelRecognitionSettings {
@@ -82,6 +84,7 @@ impl NovelRecognitionSettings {
         let chapter_read_preference = ChapterReadPreference::Current;
         let title_keywords = vec_string!["Chapter", "Novel Updates", "Royal Road", "Scribble Hub"];
         let ignore_keywords = vec_string!["Manga", "Manhua", "Manhwa"];
+        let autocomplete_ongoing = false;
 
         NovelRecognitionSettings {
             enable,
@@ -91,6 +94,7 @@ impl NovelRecognitionSettings {
             when_not_novel_go_to_reading: true,
             title_keywords,
             ignore_keywords,
+            autocomplete_ongoing,
         }
     }
 }

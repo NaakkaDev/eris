@@ -107,7 +107,7 @@ system-default = Default
 enabled = Enabled
 window-state-text = Window position and size etc.
 first-tab-always = Always show the tab selected above first when opening novel info.
-go-to-reading-now = Go to Currently reading
+go-to-reading-now = Go to Reading now
 
 settings-app-list-actions-title = Novel list actions
 settings-app-mmc = Mouse middle click
@@ -130,6 +130,7 @@ settings-reg-enable-feature = Enable this feature
 settings-reg-delay = Delay (seconds)
 settings-reg-delay-info = Update list after # seconds
 settings-reg-chapter-read-pref = Chapter read preference
+settings-reg-autocomplete-ongoing = Autocomplete "ongoing" novels
 settings-reg-keywords = Keywords
 settings-reg-ignore-keywords = Ignore keywords
 settings-rec-when = When novel is recognized
@@ -155,16 +156,16 @@ novel-alt-title = Alternative titles
 novel-details = Details
 novel-additional-details = Additional details
 novel-original-language = Original language
-novel-author = Author(s)
-novel-artist = Artist(s)
+novel-author = Author
+novel-artist = Artist
 novel-type = Type
-novel-genre = Genre(s)
+novel-genre = Genre
 novel-tags = Tags
 novel-description = Description
 novel-source = Source
 year = Year
-original-publishers = Original publisher(s)
-english-publishers = English publisher(s)
+original-publishers = Original publisher
+english-publishers = English publisher
 fully-translated = Translation complete
 not-fully-translated = Incomplete translation
 no-tags = No tags
@@ -221,7 +222,7 @@ update-from-url-checkbutton = Update from URL
 #
 # main_window.ui
 #
-currently-reading = Currently reading
+currently-reading = Reading now
 novel-list = Novel list
 history = History
 

@@ -1,21 +1,22 @@
-use crate::app::novel::{Novel, NovelContentAmount, NovelSettings, NovelType};
+use crate::app::novel::{Novel, NovelContentAmount, NovelSettings, NovelStatus, NovelType};
 use crate::appop::parsers::{cover_image_file, ParseNovel};
-use chrono::{Datelike, Local, NaiveDateTime};
+use crate::utils::capitalize_str;
+use chrono::Local;
 use select::document::Document;
-use select::predicate::{Class, Name, Predicate};
+use select::predicate::{Attr, Class, Name, Predicate};
 use std::str::FromStr;
 
-pub struct ScribbleHub {
+pub struct Webnovel {
     pub document: Document,
 }
 
-impl ScribbleHub {
+impl Webnovel {
     pub fn new(document: Document) -> Self {
         Self { document }
     }
 }
 
-impl ParseNovel for ScribbleHub {
+impl ParseNovel for Webnovel {
     fn parse_novel(&self, slug: &str) -> Option<Novel> {
         let novel_title = self.parse_title();
         let novel_id = self.generate_id(&novel_title);
@@ -27,17 +28,22 @@ impl ParseNovel for ScribbleHub {
             volumes: self.parse_volumes(&[]),
         };
 
-        let status_strings = self
+        let status_string = self
             .document
-            .select(Class("copyright"))
-            .into_iter()
-            .map(|node| node.text())
-            .collect::<Vec<String>>();
+            .select(Class("det-hd-detail").descendant(Name("strong")))
+            .next()
+            .unwrap()
+            .text()
+            .trim()
+            .to_string();
 
-        let status_strs = status_strings
-            .iter()
-            .map(|s| s.as_str())
-            .collect::<Vec<&str>>();
+        let status = if status_string == "Completed" {
+            NovelStatus::Completed
+        } else {
+            NovelStatus::Ongoing
+        };
+
+        println!("DESC: {:?}", self.parse_description());
 
         let novel = Novel {
             id: novel_id,
@@ -53,7 +59,7 @@ impl ParseNovel for ScribbleHub {
             original_language: self.parse_original_language(),
             translated: self.parse_translated(),
             content,
-            status: self.parse_status(&status_strs),
+            status,
             year: self.parse_year(),
             original_publisher: self.parse_original_publisher(),
             english_publisher: self.parse_english_publisher(),
@@ -67,26 +73,54 @@ impl ParseNovel for ScribbleHub {
     }
 
     fn parse_title(&self) -> String {
+        let small_tag_text = self
+            .document
+            .select(
+                Class("det-info")
+                    .descendant(Name("div"))
+                    .descendant(Name("h2"))
+                    .descendant(Name("small")),
+            )
+            .next()
+            .unwrap()
+            .text();
+
         self.document
-            .select(Class("fic_title"))
+            .select(
+                Class("det-info")
+                    .descendant(Name("div"))
+                    .descendant(Name("h2")),
+            )
             .next()
             .unwrap()
             .text()
+            .replace(&small_tag_text, "")
+            .trim()
+            .to_string()
     }
 
     fn parse_image(&self, novel_id: &str) -> Vec<String> {
-        let image_url = self
+        let mut image_url = self
             .document
-            .select(Class("fic_image").descendant(Name("img")))
+            .select(Class("g_thumb").descendant(Name("img")))
             .next()
             .unwrap()
             .attr("src")
-            .unwrap();
+            .unwrap()
+            .to_string();
+
+        let first_two = image_url.chars().take(2).collect::<String>();
+        if first_two == "//" {
+            // image_url = remove_first_char(image_url);
+            // image_url = remove_first_char(image_url);
+
+            image_url = image_url.replace("//", "https://");
+        }
 
         // Get the cover image if there is one available
-        if !image_url.contains("noimage") {
+        if !image_url.contains("nocover") {
             let image_name = sanitize_filename::sanitize(&novel_id);
-            let image_path = cover_image_file(image_url, image_name.as_str());
+            let image_path = cover_image_file(&image_url, image_name.as_str());
             return vec![image_path];
         }
 
@@ -96,12 +130,13 @@ impl ParseNovel for ScribbleHub {
     fn parse_description(&self) -> String {
         let novel_description_vec = self
             .document
-            .select(Class("wi_fic_desc"))
+            .select(Class("j_synopsis").descendant(Name("p")))
             .next()
             .unwrap()
-            .text()
+            .inner_html()
+            .replace("\n", "")
+            .replace("<br>", "\n")
             .trim()
-            .replace("\n", "\n\n")
             .split(' ')
             .map(String::from)
             .filter(|s| !s.is_empty())
@@ -111,29 +146,39 @@ impl ParseNovel for ScribbleHub {
     }
 
     fn parse_author(&self) -> Vec<String> {
-        let author = self
+        let meta_keywords = self
             .document
-            .select(Class("auth_name_fic"))
+            .select(Attr("name", "keywords"))
             .next()
             .unwrap()
-            .text();
+            .attr("content")
+            .unwrap()
+            .split(',')
+            .map(|t| t.trim().to_string())
+            .collect::<Vec<String>>();
 
+        let author = meta_keywords[1].clone();
         vec![author]
     }
 
     fn parse_genre(&self) -> Vec<String> {
-        self.document
-            .select(Class("wi_fic_genre").descendant(Name("a")))
-            .into_iter()
-            .map(|node| node.text())
-            .collect()
+        let genre = self
+            .document
+            .select(Class("det-hd-detail").descendant(Name("a")))
+            .next()
+            .unwrap()
+            .attr("title")
+            .unwrap_or("Unknown")
+            .to_string();
+
+        vec![genre]
     }
 
     fn parse_tags(&self) -> Vec<String> {
         self.document
-            .select(Class("wi_fic_showtags").descendant(Name("a")))
+            .select(Class("m-tags").descendant(Name("p")))
             .into_iter()
-            .map(|node| node.text())
+            .map(|node| capitalize_str(node.text().replace('#', "").trim()))
             .collect()
     }
 
@@ -147,25 +192,23 @@ impl ParseNovel for ScribbleHub {
 
     fn parse_chapters(&self, _strings: &[&str]) -> i32 {
         self.document
-            .select(Class("cnt_toc"))
+            .select(
+                Class("det-hd-detail")
+                    .descendant(Name("strong"))
+                    .descendant(Name("span")),
+            )
             .next()
             .unwrap()
             .text()
-            .parse()
+            .chars()
+            .filter(|c| c.is_digit(10))
+            .collect::<String>()
+            .parse::<i32>()
             .unwrap_or(0)
     }
 
     fn parse_year(&self) -> i32 {
-        let first_chapter_time = self
-            .document
-            .select(Class("toc_ol").descendant(Class("fic_date_pub")))
-            .last()
-            .unwrap()
-            .attr("title")
-            .unwrap();
-
-        let dt = NaiveDateTime::parse_from_str(first_chapter_time, "%b %d, %Y %l:%M %p");
-        dt.unwrap().year()
+        0
     }
 }
 
@@ -178,10 +221,10 @@ mod tests {
     use std::path::Path;
 
     /// Download any novel page as htm from www.novelupdates.com
-    /// and rename it to be `scribblehub.htm` and put it in the project root directory.
+    /// and rename it to be `royalroad.htm` and put it in the project root directory.
     #[test]
     fn test_parser() {
-        let test_file = "scribblehub.htm";
+        let test_file = "webnovel.htm";
 
         if !Path::new(test_file).exists() {
             return;
@@ -190,7 +233,7 @@ mod tests {
         let file = fs::read_to_string(test_file).expect("Unable to read file");
         let document = Document::from(file.as_str());
 
-        let novel = NovelParser::ScribbleHub.parse(document, "https://www.scribblehub.com");
+        let novel = NovelParser::Webnovel.parse(document, "https://www.webnovel.com");
 
         println!("{:?}", novel);
 

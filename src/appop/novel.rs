@@ -17,6 +17,7 @@ use crate::{data_dir, DATA_IMAGE_DIR};
 use anyhow::Context;
 use chrono::Local;
 use gtk::prelude::{NotebookExt, StackExt, TreeModelExt, TreeViewExt, WidgetExt};
+use ngrammatic::{CorpusBuilder, Pad};
 use select::document::Document;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -61,9 +62,12 @@ impl AppOp {
 
         debug!("appop::chapter_read");
 
-        self.ui.update_reading_now_volume(&volume_num);
-        self.ui.update_reading_now_chapter(&chapter_num);
-        self.ui.update_reading_now_side_stories(&side_story_num);
+        self.ui
+            .update_reading_now_volume(volume_num, novel.content.volumes);
+        self.ui
+            .update_reading_now_chapter(chapter_num, novel.content.chapters);
+        self.ui
+            .update_reading_now_side_stories(side_story_num, novel.content.side_stories);
 
         let data = NovelRecognitionData::new(
             volume_num,
@@ -220,7 +224,7 @@ impl AppOp {
             novel_type: NovelType::WebNovel,
             original_language: "".to_string(),
             translated: None,
-            content_available: NovelContentAmount {
+            content: NovelContentAmount {
                 volumes: 0,
                 chapters: novel_file.chapters.available as f32,
                 side_stories: 0,
@@ -476,6 +480,19 @@ impl AppOp {
         debug!("appop::edit_novel_settings | {:?}", novel_settings);
 
         if let Some(mut novel) = self.ui.lists.active_novel.clone() {
+            // Update the currently reading novel if it was the one being edited
+            // so any potential edits will be updated on the reading now view
+            // if let Some(reading_novel) = self.currently_reading.novel.read().as_ref() {
+            //     if reading_novel.id == novel.id {
+            //         self.ui.update_reading_now(
+            //             &Some(novel.clone()),
+            //             &novel.title,
+            //             &NovelRecognitionData::default(),
+            //             "",
+            //         );
+            //     }
+            // }
+
             // Check if the novel was moved to another list
             let old_iter = if novel.settings.list_status != novel_settings.list_status {
                 self.ui.lists.find_iter(&novel)
@@ -594,17 +611,28 @@ impl AppOp {
         self.ui.filter.list_insert(&novel);
         self.ui.lists.list_insert(&novel);
 
-        // Update reading now
-        let novel_title = &novel.title.clone();
-        let data = NovelRecognitionData::default();
-        self.ui
-            .update_reading_now(&Some(novel), novel_title, &data, "");
+        // Update currently reading things only if the novel added is "relevant"
+        if self.currently_reading.title.read().as_ref().is_some()
+            && self
+                .currently_reading
+                .title
+                .read()
+                .as_ref()
+                .unwrap()
+                .contains(&novel.title)
+        {
+            // Update reading now
+            let novel_title = &novel.title.clone();
+            let data = NovelRecognitionData::default();
+            self.ui
+                .update_reading_now(&Some(novel), novel_title, &data, "");
 
-        // Reset the currently reading title so the reading now view gets updated
-        let _ = self.currently_reading.title.write().take();
+            // Reset the currently reading title so the reading now view gets updated
+            let _ = self.currently_reading.title.write().take();
 
-        // Reset currently reading delay thingy
-        self.currently_reading.timestamp_take();
+            // Reset currently reading delay thingy
+            self.currently_reading.timestamp_take();
+        }
     }
 
     /// Write db to file in another thread.
@@ -699,25 +727,68 @@ impl AppOp {
     }
 
     /// Try to find `Novel` by `Novel.title` or `Novel.settings.window_titles` from the db.
-    pub fn get_by_window_title(&self, window_title: &str) -> Option<Novel> {
+    pub fn find_novel_by_window_title(&self, window_title: &str) -> Option<Novel> {
+        if let Some(novels) = &self.db.read().novels {
+            let mut corpus = CorpusBuilder::new().arity(2).pad_full(Pad::Auto).finish();
+
+            // First check if the window title is identical to any novel in the db
+            let exact_match = self.get_by_title(window_title);
+            if exact_match.is_some() {
+                return exact_match;
+            }
+
+            // Then check for keywords in novel settings
+            let keyword_match = self.get_by_novel_keywords(window_title);
+            if keyword_match.is_some() {
+                return keyword_match;
+            }
+
+            // Lasty do a high percentage match fuzzy search
+            for novel in novels {
+                corpus.add_text(&novel.title.to_lowercase());
+            }
+            if let Some(top_result) = corpus.search(window_title, 0.25).first() {
+                if top_result.similarity > 0.97 {
+                    return self.get_by_title(&top_result.text);
+                } else {
+                    debug!(
+                        "{} (did you mean {}? [{:.0}% match])",
+                        window_title,
+                        top_result.text,
+                        top_result.similarity * 100.0
+                    );
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Try to find `Novel` by `Novel.settings.window_titles` from the db.
+    pub fn get_by_novel_keywords(&self, window_title: &str) -> Option<Novel> {
         if let Some(novels) = &self.db.read().novels {
             for novel in novels {
-                // Check if the novel is in db by their title first
-                // then by their possible window titles if any
-                if novel.title.to_lowercase() == window_title.to_lowercase()
-                    || window_title
-                        .to_lowercase()
-                        .contains(&novel.title.to_lowercase())
-                {
-                    return Some(novel.clone());
-                } else if let Some(window_titles) = &novel.settings.window_titles {
-                    if window_titles.iter().any(|i| i == window_title)
-                        || window_titles
-                            .iter()
-                            .any(|i| !i.is_empty() && window_title.contains(i))
+                if let Some(window_titles) = &novel.settings.window_titles {
+                    // Get by exact match
+                    if window_titles
+                        .iter()
+                        .any(|i| !i.is_empty() && i == window_title)
                     {
                         return Some(novel.clone());
                     }
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Get `Novel` from db by its title
+    pub fn get_by_title(&self, window_title: &str) -> Option<Novel> {
+        if let Some(novels) = &self.db.read().novels {
+            for novel in novels {
+                if novel.title.to_lowercase() == window_title.to_lowercase() {
+                    return Some(novel.clone());
                 }
             }
         }
@@ -860,14 +931,30 @@ impl AppOp {
             return novel.clone();
         }
 
-        // Update the chapter read number
-        novel.settings.content_read.volumes = volume_num;
-        novel.settings.content_read.chapters = new_chapter_read_num;
-        novel.settings.content_read.side_stories = new_side_story_num;
+        // If the numbers are not set by user (`exact_num` = probably set by user)
+        // then make sure that the automation does not go backwards in case of a derp
+        if exact_num {
+            novel.settings.content_read.chapters = new_chapter_read_num;
+            novel.settings.content_read.volumes = volume_num;
+            novel.settings.content_read.side_stories = new_side_story_num;
+        } else {
+            // Update the volume/chapter/side story number only if it is larger than the saved one
+            if new_chapter_read_num > novel.settings.content_read.chapters {
+                novel.settings.content_read.chapters = new_chapter_read_num;
+            }
+
+            if volume_num > novel.settings.content_read.volumes {
+                novel.settings.content_read.volumes = volume_num;
+            }
+
+            if new_side_story_num > novel.settings.content_read.side_stories {
+                novel.settings.content_read.side_stories = new_side_story_num;
+            }
+        }
 
         // Check if the novel status allows for automatic novel list status changing to `Completed`
-        let consider_completed =
-            matches!(&novel.status, NovelStatus::Completed | NovelStatus::Dropped);
+        let can_complete = matches!(&novel.status, NovelStatus::Completed | NovelStatus::Dropped)
+            || self.settings.read().novel_recognition.autocomplete_ongoing;
 
         // Check if the novel should be moved to "reading" status
         // Only move novel to reading list from plan to read list
@@ -876,10 +963,10 @@ impl AppOp {
 
         // Change the list status to `Completed` if all the chapters have been read.
         // Should never work for `OnGoing` novels.
-        let is_completed = volume_num >= novel.content_available.volumes
-            && new_chapter_read_num >= novel.content_available.chapters
-            && side_story_num >= novel.content_available.side_stories
-            && consider_completed;
+        let is_completed = volume_num >= novel.content.volumes
+            && new_chapter_read_num >= novel.content.chapters
+            && side_story_num >= novel.content.side_stories
+            && can_complete;
 
         // Edit chapter read count
         // Get the correct list based on the list status in novel settings

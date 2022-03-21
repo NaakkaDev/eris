@@ -28,7 +28,7 @@ impl ParseNovel for NovelUpdates {
         let image = self.parse_image(&novel_id);
 
         let mut novel_status = NovelStatus::Other;
-        let mut content_available = NovelContentAmount::default();
+        let mut content = NovelContentAmount::default();
         let status_content = self
             .document
             .select(Attr("id", "editstatus"))
@@ -42,9 +42,9 @@ impl ParseNovel for NovelUpdates {
             // which allows this logic to get the correct value(s) instead of the total
             split_status.reverse();
 
-            content_available.chapters = self.parse_chapters(&split_status) as f32;
-            content_available.side_stories = self.parse_side_stories(&split_status);
-            content_available.volumes = self.parse_volumes(&split_status);
+            content.chapters = self.parse_chapters(&split_status) as f32;
+            content.side_stories = self.parse_side_stories(&split_status);
+            content.volumes = self.parse_volumes(&split_status);
             novel_status = self.parse_status(&split_status);
         }
 
@@ -61,7 +61,7 @@ impl ParseNovel for NovelUpdates {
             novel_type: self.parse_type(),
             original_language: self.parse_original_language(),
             translated: self.parse_translated(),
-            content_available,
+            content,
             status: novel_status,
             year: self.parse_year(),
             original_publisher: self.parse_original_publisher(),
@@ -221,6 +221,11 @@ impl ParseNovel for NovelUpdates {
             }
         }
 
+        // Fallback to 0
+        if potential_chapters.is_empty() {
+            return 0;
+        }
+
         // Sort the list so the largest number is last
         potential_chapters.sort_unstable();
 
@@ -330,11 +335,13 @@ mod tests {
     /// and rename it to be `novelupdates.htm` and put it in the project root directory.
     #[test]
     fn test_parser() {
-        if !Path::new("novelupdates.htm").exists() {
+        let test_file = "novelupdates.htm";
+
+        if !Path::new(test_file).exists() {
             return;
         }
 
-        let file = fs::read_to_string("novelupdates.htm").expect("Unable to read file");
+        let file = fs::read_to_string(test_file).expect("Unable to read file");
         let document = Document::from(file.as_str());
 
         let nu_parser = NovelUpdates::new(document);

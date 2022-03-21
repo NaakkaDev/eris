@@ -269,7 +269,7 @@ pub struct Novel {
     /// If the novel completely translated.
     pub translated: Option<bool>,
     /// Available content in the original language; volumes, chapters and parts.
-    pub content_available: NovelContentAmount,
+    pub content: NovelContentAmount,
     /// Novel status.
     pub status: NovelStatus,
     /// The year when the novel saw light in the country of origin.
@@ -300,6 +300,10 @@ impl Novel {
         }
 
         self.title.to_string()
+    }
+
+    pub fn status(&self) -> String {
+        self.status.to_string()
     }
 
     /// Returns the correct icon `Pixbuf` that matches the novel `status`.
@@ -360,26 +364,23 @@ impl Novel {
     ///
     /// e.g: 3 volumes / 12 chapters
     ///      132 chapters & 3 side stories
-    pub fn content_available(&self) -> String {
+    pub fn content(&self) -> String {
         let mut content = String::new();
 
-        if self.content_available.volumes > 0 {
-            content.push_str(&format!("{} ", self.content_available.volumes.to_string()));
+        if self.content.volumes > 0 {
+            content.push_str(&format!("{} ", self.content.volumes.to_string()));
             content.push_str(&fl!("volumes").to_lowercase());
         }
-        if self.content_available.chapters > 0.0 {
-            if self.content_available.volumes > 0 {
+        if self.content.chapters > 0.0 {
+            if self.content.volumes > 0 {
                 content.push_str(" / ");
             }
-            content.push_str(&format!("{} ", self.content_available.chapters.to_string()));
+            content.push_str(&format!("{} ", self.content.chapters.to_string()));
             content.push_str(&fl!("chapters").to_lowercase());
         }
-        if self.content_available.side_stories > 0 {
+        if self.content.side_stories > 0 {
             content.push_str(" & ");
-            content.push_str(&format!(
-                "{} ",
-                self.content_available.side_stories.to_string()
-            ));
+            content.push_str(&format!("{} ", self.content.side_stories.to_string()));
             content.push_str(&fl!("side-stories").to_lowercase());
         }
 
