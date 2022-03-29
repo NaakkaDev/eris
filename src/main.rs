@@ -102,7 +102,7 @@ fn generate_dirs() {
         match fs::create_dir_all(&data_dir(DATA_IMAGE_DIR)) {
             Ok(_) => {}
             Err(e) => {
-                println!("{}", e);
+                error!("{}", e);
                 panic!(
                     "Could not create directory `{}`",
                     &data_dir(DATA_IMAGE_DIR).to_str().unwrap()

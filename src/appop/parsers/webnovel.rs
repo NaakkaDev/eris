@@ -1,7 +1,8 @@
 use crate::app::novel::{Novel, NovelContentAmount, NovelSettings, NovelStatus, NovelType};
 use crate::appop::parsers::{cover_image_file, ParseNovel};
 use crate::utils::capitalize_str;
-use chrono::Local;
+use chrono::{Datelike, Local, NaiveDateTime};
+use regex::Regex;
 use select::document::Document;
 use select::predicate::{Attr, Class, Name, Predicate};
 use std::str::FromStr;
@@ -42,8 +43,6 @@ impl ParseNovel for Webnovel {
         } else {
             NovelStatus::Ongoing
         };
-
-        println!("DESC: {:?}", self.parse_description());
 
         let novel = Novel {
             id: novel_id,
@@ -191,23 +190,46 @@ impl ParseNovel for Webnovel {
     }
 
     fn parse_chapters(&self, _strings: &[&str]) -> i32 {
-        self.document
-            .select(
-                Class("det-hd-detail")
-                    .descendant(Name("strong"))
-                    .descendant(Name("span")),
-            )
+        let strings = self
+            .document
+            .select(Class("det-hd-detail"))
             .next()
             .unwrap()
             .text()
-            .chars()
-            .filter(|c| c.is_digit(10))
-            .collect::<String>()
-            .parse::<i32>()
-            .unwrap_or(0)
+            .split(' ')
+            .map(String::from)
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<String>>();
+
+        // Check if the `Vec` of `String`s contains "Chapters"
+        // If then assume the previous item has the amount of chapters
+        if strings.contains(&"Chapters".to_string()) {
+            return strings
+                .get(strings.iter().position(|s| s == "Chapters").unwrap() - 1)
+                .unwrap()
+                .parse::<i32>()
+                .unwrap();
+        }
+
+        0
     }
 
     fn parse_year(&self) -> i32 {
+        let head_text = self.document.select(Name("head")).next().unwrap().text();
+        let re = Regex::new(r#"datePublished.*"(.*?)Z"#).unwrap();
+        let re_captures = re.captures(&head_text);
+        if let Some(captures) = re_captures {
+            let dt_str = captures.get(1).unwrap().as_str();
+            match NaiveDateTime::parse_from_str(dt_str, "%Y-%m-%dT%H:%M:%S%.3f") {
+                Ok(dt) => {
+                    return dt.year();
+                }
+                Err(e) => {
+                    error!("{}", e);
+                }
+            }
+        }
+
         0
     }
 }

@@ -963,9 +963,9 @@ impl AppOp {
 
         // Change the list status to `Completed` if all the chapters have been read.
         // Should never work for `OnGoing` novels.
-        let is_completed = volume_num >= novel.content.volumes
-            && new_chapter_read_num >= novel.content.chapters
-            && side_story_num >= novel.content.side_stories
+        let is_completed = (volume_num >= novel.content.volumes)
+            && (new_chapter_read_num >= novel.content.chapters && novel.content.chapters > 0.0)
+            && (side_story_num >= novel.content.side_stories)
             && can_complete;
 
         // Edit chapter read count
