@@ -496,9 +496,12 @@ impl AppOp {
 
     /// Update information on the reading now view for the current novel being visible there, if any.
     pub fn update_reading_now_novel_info(&mut self, novel: &Novel) {
-        if let Some(currently_reading) = self.currently_reading.novel.read().as_ref() {
+        let currently_reading_novel = self.currently_reading.novel.read().clone();
+        if let Some(currently_reading) = currently_reading_novel {
             if currently_reading.id == novel.id {
                 self.ui.update_reading_now(&Some(novel.clone()));
+
+                self.currently_reading.novel.write().replace(novel.clone());
             }
         }
     }
