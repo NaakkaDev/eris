@@ -1,6 +1,4 @@
-use crate::app::novel::{
-    ChapterRead, Novel, NovelContentAmount, NovelFile, NovelSettings, NovelStatus, NovelType,
-};
+use crate::app::novel::{ChapterRead, Novel, NovelContentAmount, NovelFile, NovelSettings, NovelStatus, NovelType};
 use crate::app::settings::ChapterReadPreference;
 use crate::app::NOVEL_UPDATE_COOLDOWN;
 use crate::appop::AppOp;
@@ -62,21 +60,11 @@ impl AppOp {
 
         debug!("appop::chapter_read");
 
-        self.ui
-            .update_reading_now_volume(volume_num, novel.content.volumes);
-        self.ui
-            .update_reading_now_chapter(chapter_num, novel.content.chapters);
-        self.ui
-            .update_reading_now_side_stories(side_story_num, novel.content.side_stories);
+        self.ui.update_reading_now_volume(volume_num);
+        self.ui.update_reading_now_chapter(chapter_num);
+        self.ui.update_reading_now_side_stories(side_story_num);
 
-        let data = NovelRecognitionData::new(
-            volume_num,
-            chapter_num,
-            side_story_num,
-            None,
-            String::new(),
-            false,
-        );
+        let data = NovelRecognitionData::new(volume_num, chapter_num, side_story_num, None, String::new(), false);
 
         // Updated novel instance with correct chapter number
         novel = self.reading_novel(&mut novel, &data, exact_num);
@@ -98,8 +86,14 @@ impl AppOp {
             );
             // Do nothing if it hasn't been long enough since the last update
             if old_novel.last_scrape + NOVEL_UPDATE_COOLDOWN > Local::now().timestamp() {
-                self.ui.notification_dialog(&format!("`{}` was not updated from url. It has not been long enough since the last update.", &old_novel.title));
-                info!("Novel `{}` was not updated from url. It has not beed long enough since the last update.", &old_novel.title);
+                self.ui.notification_dialog(&format!(
+                    "`{}` was not updated from url. It has not been long enough since the last update.",
+                    &old_novel.title
+                ));
+                info!(
+                    "Novel `{}` was not updated from url. It has not beed long enough since the last update.",
+                    &old_novel.title
+                );
                 return;
             }
 
@@ -117,10 +111,9 @@ impl AppOp {
 
                 self.history_send(NovelHistoryItem::new_history_update_novel(&novel));
 
-                self.ui
-                    .novel_dialog
-                    .update_stack
-                    .set_visible_child_name("page0");
+                self.ui.novel_dialog.update_stack.set_visible_child_name("page0");
+
+                self.update_reading_now_novel_info(&novel);
             }
         }
     }
@@ -130,9 +123,7 @@ impl AppOp {
     pub fn add_novel_from_file(&mut self, file: PathBuf, novel_file: NovelFile) {
         debug!("appop::add_novel_from_file");
 
-        self.ui
-            .file_new_dialog
-            .update(&self.ui.builder, &novel_file);
+        self.ui.file_new_dialog.update(&self.ui.builder, &novel_file);
         self.ui.file_new_dialog.dialog.show();
 
         self.file_to_add_from = Some(file);
@@ -159,18 +150,13 @@ impl AppOp {
         // `self.novel_file_data` should never be `None` here.
         let image = if let Some(cover_data) = &self.novel_file_data.as_ref().unwrap().cover_data {
             let cover_ext = self.novel_file_data.clone().unwrap().cover_ext.unwrap();
-            let cover_file_path = format!(
-                "{}/{}.{}",
-                DATA_IMAGE_DIR, &novel_file.novel_string_id, cover_ext
-            );
+            let cover_file_path = format!("{}/{}.{}", DATA_IMAGE_DIR, &novel_file.novel_string_id, cover_ext);
             let path = data_dir(&cover_file_path);
             // Create the cover file if it doesn't exist
             if !path.exists() {
                 let f = File::create(path).context(ErisError::WriteToDisk).unwrap();
                 let mut writer = BufWriter::new(f);
-                writer
-                    .write_all(cover_data)
-                    .expect("Cannot write cover image file");
+                writer.write_all(cover_data).expect("Cannot write cover image file");
             }
 
             vec![cover_file_path]
@@ -199,17 +185,9 @@ impl AppOp {
             ..Default::default()
         };
 
-        let authors: Vec<String> = novel_file
-            .authors
-            .split(',')
-            .map(|t| t.trim().to_string())
-            .collect();
+        let authors: Vec<String> = novel_file.authors.split(',').map(|t| t.trim().to_string()).collect();
 
-        let genres: Vec<String> = novel_file
-            .genres
-            .split(',')
-            .map(|t| t.trim().to_string())
-            .collect();
+        let genres: Vec<String> = novel_file.genres.split(',').map(|t| t.trim().to_string()).collect();
 
         let novel_to_add = Novel {
             id: novel_file.novel_string_id,
@@ -306,16 +284,12 @@ impl AppOp {
         // Get the data from the webpage.
         match agent.get(url.as_str()).call() {
             Ok(response) => {
-                let document =
-                    Document::from(response.into_string().expect("Cannot String").as_str());
+                let document = Document::from(response.into_string().expect("Cannot String").as_str());
 
                 let novel_parser = NovelParser::from_url(&url);
                 if !novel_parser.is_supported() {
                     // Do nothing more if novel parser is not supported
-                    warn!(
-                        "Novel was not added because the Source URL {} it not supported.",
-                        url
-                    );
+                    warn!("Novel was not added because the Source URL {} it not supported.", url);
                     return;
                 }
 
@@ -351,11 +325,7 @@ impl AppOp {
                     url.as_str(),
                     code
                 ));
-                error!(
-                    "Could not add novel. Url {} returned {}",
-                    url.as_str(),
-                    code
-                );
+                error!("Could not add novel. Url {} returned {}", url.as_str(), code);
                 /* the server returned an unexpected status
                 code (such as 400, 500 etc) */
             }
@@ -390,8 +360,7 @@ impl AppOp {
     pub fn update_novel(&mut self, old_novel: &Novel) -> Option<Novel> {
         // Do nothing if slug doesn't exist.
         if old_novel.slug.is_none() || old_novel.slug.as_ref().unwrap().is_empty() {
-            self.ui
-                .notification_dialog("Cannot update novel data, missing Url.");
+            self.ui.notification_dialog("Cannot update novel data, missing Url.");
             warn!("Cannot update novel data. Missing Url.");
             return None;
         }
@@ -407,8 +376,7 @@ impl AppOp {
         match agent.get(url.as_str()).call() {
             Ok(response) => {
                 debug!("update_novel, response ok");
-                let document =
-                    Document::from(response.into_string().expect("Cannot String").as_str());
+                let document = Document::from(response.into_string().expect("Cannot String").as_str());
 
                 let novel_parser = NovelParser::from_url(url);
                 if !novel_parser.is_supported() {
@@ -428,11 +396,7 @@ impl AppOp {
                     url.as_str(),
                     code
                 ));
-                error!(
-                    "Could not update novel! URL: {} returned {}",
-                    url.as_str(),
-                    code
-                );
+                error!("Could not update novel! URL: {} returned {}", url.as_str(), code);
                 /* the server returned an unexpected status
                 code (such as 400, 500 etc) */
             }
@@ -480,19 +444,6 @@ impl AppOp {
         debug!("appop::edit_novel_settings | {:?}", novel_settings);
 
         if let Some(mut novel) = self.ui.lists.active_novel.clone() {
-            // Update the currently reading novel if it was the one being edited
-            // so any potential edits will be updated on the reading now view
-            // if let Some(reading_novel) = self.currently_reading.novel.read().as_ref() {
-            //     if reading_novel.id == novel.id {
-            //         self.ui.update_reading_now(
-            //             &Some(novel.clone()),
-            //             &novel.title,
-            //             &NovelRecognitionData::default(),
-            //             "",
-            //         );
-            //     }
-            // }
-
             // Check if the novel was moved to another list
             let old_iter = if novel.settings.list_status != novel_settings.list_status {
                 self.ui.lists.find_iter(&novel)
@@ -530,18 +481,26 @@ impl AppOp {
         debug!("appop::edit_active_novel");
 
         let novel = self.ui.lists.active_novel.clone().unwrap();
-        let mut updated_novel = self
-            .ui
-            .novel_dialog
-            .update_novel_from_edit(&self.ui.builder, &novel);
+        let mut updated_novel = self.ui.novel_dialog.update_novel_from_edit(&self.ui.builder, &novel);
+
         updated_novel = self.update_novel_in_db(updated_novel.clone());
 
-        self.ui
-            .novel_dialog
-            .update(&self.ui.builder, &updated_novel);
+        self.ui.novel_dialog.update(&self.ui.builder, &updated_novel);
         self.ui.lists.list_update(&updated_novel);
         self.ui.filter.list_update(&novel);
+
+        self.update_reading_now_novel_info(&updated_novel);
+
         self.ui.lists.active_novel = Some(updated_novel);
+    }
+
+    /// Update information on the reading now view for the current novel being visible there, if any.
+    pub fn update_reading_now_novel_info(&mut self, novel: &Novel) {
+        if let Some(currently_reading) = self.currently_reading.novel.read().as_ref() {
+            if currently_reading.id == novel.id {
+                self.ui.update_reading_now(&Some(novel.clone()));
+            }
+        }
     }
 
     /// Update the given `Novel` read count in db.
@@ -573,10 +532,7 @@ impl AppOp {
             || novel.settings.content_read.side_stories > 0
             || novel.settings.content_read.volumes > 0
         {
-            self.history_send(NovelHistoryItem::new_history_chapter_read(
-                &novel,
-                chapter_title,
-            ));
+            self.history_send(NovelHistoryItem::new_history_chapter_read(&novel, chapter_title));
         }
         novel
     }
@@ -603,9 +559,7 @@ impl AppOp {
         self.history_send(NovelHistoryItem::new_history_add_novel(&novel));
 
         // Switch to the list the novel is added to
-        self.ui
-            .list_notebook
-            .set_page(novel.settings.list_status.to_i32());
+        self.ui.list_notebook.set_page(novel.settings.list_status.to_i32());
 
         // Update the UI lists
         self.ui.filter.list_insert(&novel);
@@ -622,10 +576,7 @@ impl AppOp {
                 .contains(&novel.title)
         {
             // Update reading now
-            let novel_title = &novel.title.clone();
-            let data = NovelRecognitionData::default();
-            self.ui
-                .update_reading_now(&Some(novel), novel_title, &data, "");
+            self.ui.update_reading_now(&Some(novel));
 
             // Reset the currently reading title so the reading now view gets updated
             let _ = self.currently_reading.title.write().take();
@@ -674,10 +625,7 @@ impl AppOp {
             debug!("Saving settings to file in a new thread!");
             match settings.write().write_to_file() {
                 Ok(_) => {}
-                Err(e) => error!(
-                    "Could not save settings to a file in another thread. {:?}",
-                    e
-                ),
+                Err(e) => error!("Could not save settings to a file in another thread. {:?}", e),
             };
         });
 
@@ -688,10 +636,7 @@ impl AppOp {
                 if let Some(window_state) = window_state.write().clone() {
                     match window_state.write_to_file() {
                         Ok(_) => {}
-                        Err(e) => error!(
-                            "Could not save window state to file in another thread. {:?}",
-                            e
-                        ),
+                        Err(e) => error!("Could not save window state to file in another thread. {:?}", e),
                     };
                 }
             });
@@ -770,10 +715,7 @@ impl AppOp {
             for novel in novels {
                 if let Some(window_titles) = &novel.settings.window_titles {
                     // Get by exact match
-                    if window_titles
-                        .iter()
-                        .any(|i| !i.is_empty() && i == window_title)
-                    {
+                    if window_titles.iter().any(|i| !i.is_empty() && i == window_title) {
                         return Some(novel.clone());
                     }
                 }
@@ -806,10 +748,7 @@ impl AppOp {
                 if let Some(window_titles) = &novel.settings.window_titles {
                     for title in title.split_whitespace() {
                         for wtitle in window_titles {
-                            if !wtitle.is_empty()
-                                && wtitle.contains(title)
-                                && !potentials.contains(novel)
-                            {
+                            if !wtitle.is_empty() && wtitle.contains(title) && !potentials.contains(novel) {
                                 // Add a potential novel into the array,
                                 // only once though
                                 potentials.push(novel.clone());
@@ -857,12 +796,7 @@ impl AppOp {
     }
 
     /// Reading a novel so update the given `Novel` data and return it.
-    pub fn reading_novel(
-        &mut self,
-        novel: &mut Novel,
-        data: &NovelRecognitionData,
-        exact_num: bool,
-    ) -> Novel {
+    pub fn reading_novel(&mut self, novel: &mut Novel, data: &NovelRecognitionData, exact_num: bool) -> Novel {
         debug!("appop:reading_novel");
 
         let volume_num = data.volume;
@@ -870,12 +804,7 @@ impl AppOp {
         let side_story_num = data.side_story;
 
         // Handle updating the data in novel and list
-        let novel_preference = self
-            .settings
-            .read()
-            .clone()
-            .novel_recognition
-            .chapter_read_preference;
+        let novel_preference = self.settings.read().clone().novel_recognition.chapter_read_preference;
         // Used to set the chapter read number to either current one or current one - 1
         let read_modifier = match novel_preference {
             ChapterReadPreference::Current => 0.0,
@@ -984,14 +913,12 @@ impl AppOp {
                 if novel_id == novel.id {
                     self.ui.lists.active_list = novel.settings.list_status;
                     // Check if the novel should be moved to another list
-                    let old_iter = if novel.settings.list_status != ListStatus::Completed
-                        && is_completed
-                        || move_to_reading
-                    {
-                        Some(iter)
-                    } else {
-                        None
-                    };
+                    let old_iter =
+                        if novel.settings.list_status != ListStatus::Completed && is_completed || move_to_reading {
+                            Some(iter)
+                        } else {
+                            None
+                        };
 
                     if move_to_reading {
                         novel.settings.list_status = ListStatus::Reading;
@@ -1000,11 +927,7 @@ impl AppOp {
                     }
 
                     // Update the chapters read count
-                    return self.edit_novel_chapters_read_count(
-                        novel.clone(),
-                        old_iter,
-                        data.chapter_title.clone(),
-                    );
+                    return self.edit_novel_chapters_read_count(novel.clone(), old_iter, data.chapter_title.clone());
                 }
             }
         }
@@ -1026,8 +949,8 @@ impl AppOp {
         );
         if let Some(reader_file) = novel.settings.file.as_ref() {
             let page = novel.settings.content_read.chapters;
-            // Epub file set, opening it with external reader
-            debug!("Epub file set: {:?}, page: {:?}", reader_file, page);
+            // File set, opening it with external reader
+            debug!("File set: {:?}, page: {:?}", reader_file, page);
 
             if let Some(program) = &self.settings.read().general.reader {
                 let args: Vec<String> = self
@@ -1113,5 +1036,37 @@ impl AppOp {
     /// Used for returning from the filter tab.
     pub fn return_to_selected_page(&self) {
         self.ui.list_notebook.set_page(self.ui.filter.selected_page);
+    }
+
+    /// Push a new keyword into novel settings `window_titles`.
+    pub fn update_novel_reading_keyword(&mut self, mut novel: Novel, keyword: String) {
+        debug!("Updated novel keywords with {:?}", keyword);
+
+        if let Some(keywords) = novel.settings.window_titles.as_mut() {
+            // Update
+            keywords.push(keyword);
+        } else {
+            // Add new
+            novel.settings.window_titles = Some(vec![keyword]);
+        }
+
+        // Save the changes
+        let _ = self.update_novel_in_db(novel.clone());
+    }
+
+    /// Updates novel status (not list status) and returns the updated novel.
+    pub fn update_novel_status(&mut self, mut novel: Novel, status: NovelStatus) -> Novel {
+        debug!("Updated novel status to: {:?}", status);
+
+        // Do nothing if novel status is already set the same
+        if novel.status == status {
+            return novel;
+        }
+
+        // Set the status
+        novel.status = status;
+
+        // Save the changes and return the saved Novel
+        self.update_novel_in_db(novel)
     }
 }

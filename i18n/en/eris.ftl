@@ -84,7 +84,7 @@ delete-button = Delete
 open-dir-button = Open directory
 continue-reading-button = Continue reading
 add-button = Add
-
+reading-type-button = Set as Completed
 
 #
 # History
@@ -119,7 +119,7 @@ settings-app-interface = Interface
 settings-app-startup-title = Startup
 settings-app-system-title = System
 settings-app-language = Language
-settings-app-language-hint = Requires a restart
+settings-app-language-hint = Requires a restart.
 settings-app-window-state = Window state system
 settings-app-reader = Reader software
 settings-app-arguments = Launch arguments

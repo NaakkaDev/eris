@@ -66,12 +66,11 @@ fn setup_logging() -> Result<(), fern::InitError> {
 
     let settings_data = Settings::open().expect("Failed to open settings file.");
     // Get either the language from settings or the system default one
-    let requested_languages: Vec<LanguageIdentifier> =
-        if let Some(language) = &settings_data.general.language {
-            vec![LanguageIdentifier::from_str(language).unwrap()]
-        } else {
-            DesktopLanguageRequester::requested_languages()
-        };
+    let requested_languages: Vec<LanguageIdentifier> = if let Some(language) = &settings_data.general.language {
+        vec![LanguageIdentifier::from_str(language).unwrap()]
+    } else {
+        DesktopLanguageRequester::requested_languages()
+    };
 
     if let Err(error) = localizer().select(&requested_languages) {
         error!("Cannot load language. {:?}", error);
@@ -118,8 +117,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // The settings file location needs to exist for `setup_logging()`
     setup_logging().expect("failed to initialize logging.");
 
-    let application =
-        gtk::Application::new(Some(APPLICATION_ID), gio::ApplicationFlags::FLAGS_NONE);
+    let application = gtk::Application::new(Some(APPLICATION_ID), gio::ApplicationFlags::FLAGS_NONE);
 
     application.connect_startup(|application| {
         app::on_startup(application);

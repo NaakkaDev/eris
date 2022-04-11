@@ -68,8 +68,7 @@ impl UI {
         main_window.set_title("Eris");
 
         let resource = Resources::get("icons/eris.ico").unwrap().data;
-        let icon_pix =
-            Pixbuf::from_read(Cursor::new(resource)).expect("Cannot load pixbuf from resource.");
+        let icon_pix = Pixbuf::from_read(Cursor::new(resource)).expect("Cannot load pixbuf from resource.");
         main_window.set_icon(Some(&icon_pix));
 
         // Translate all the things
@@ -96,6 +95,7 @@ impl UI {
 
         builder.button_i18n("btn_add", &fl!("add-button"));
         builder.button_i18n("btn_continue_reading", &fl!("continue-reading-button"));
+        builder.button_i18n("btn_reading_type", &fl!("reading-type-button"));
 
         builder.menu_item_i18n("menu_file", &fl!("menu-file"));
         builder.menu_item_i18n("menu_tools", &fl!("menu-tools"));
@@ -145,14 +145,12 @@ impl UI {
         ];
 
         let new_icon = Resources::get("icons/new_icon.png").unwrap().data;
-        let new_pix =
-            Pixbuf::from_read(Cursor::new(new_icon)).expect("Cannot load pixbuf from resource.");
+        let new_pix = Pixbuf::from_read(Cursor::new(new_icon)).expect("Cannot load pixbuf from resource.");
         let btn_new_img = builder.get::<gtk::Image>("btn_new_img");
         btn_new_img.set_pixbuf(Some(&new_pix));
 
         let settings_icon = Resources::get("icons/settings_icon.png").unwrap().data;
-        let settings_pix = Pixbuf::from_read(Cursor::new(settings_icon))
-            .expect("Cannot load pixbuf from resource.");
+        let settings_pix = Pixbuf::from_read(Cursor::new(settings_icon)).expect("Cannot load pixbuf from resource.");
         let btn_settings_img = builder.get::<gtk::Image>("btn_settings_img");
         btn_settings_img.set_pixbuf(Some(&settings_pix));
 
@@ -180,15 +178,9 @@ impl UI {
         for combobox in self.settings_dialog.action_comboboxes.values() {
             self.populate_combobox(combobox, &self.settings_dialog.action_list);
         }
-        self.populate_combobox(
-            &self.settings_dialog.preference_combobox,
-            &ChapterReadPreference::vec(),
-        );
+        self.populate_combobox(&self.settings_dialog.preference_combobox, &ChapterReadPreference::vec());
         self.populate_combobox(&self.novel_dialog.status_combobox, &ListStatus::vec());
-        self.populate_combobox(
-            &self.novel_dialog.novel_status_combobox,
-            &NovelStatus::vec(),
-        );
+        self.populate_combobox(&self.novel_dialog.novel_status_combobox, &NovelStatus::vec());
         self.populate_combobox(&self.novel_dialog.novel_type_combobox, &NovelType::vec());
         self.populate_combobox(&self.new_dialog.status_combobox, &ListStatus::vec());
         self.populate_combobox(&self.file_new_dialog.status_combobox, &ListStatus::vec());
@@ -203,10 +195,7 @@ impl UI {
                 "Actions",
             ],
         );
-        self.populate_language_combobox(
-            &self.settings_dialog.language_combobox,
-            &available_languages(),
-        );
+        self.populate_language_combobox(&self.settings_dialog.language_combobox, &available_languages());
 
         debug!("UI init doned");
     }
@@ -215,6 +204,7 @@ impl UI {
         let main_notebook = self.builder.get::<gtk::Notebook>("main_notebook");
         let view_selection_listbox = self.builder.get::<gtk::ListBox>("view_selection_listbox");
         let btn_continue_reading = self.builder.get::<gtk::Button>("btn_continue_reading");
+        let btn_reading_type = self.builder.get::<gtk::Button>("btn_reading_type");
 
         main_notebook.connect_switch_page(glib::clone!(@strong app_runtime => move |_, _, page| {
             app_runtime.update_state_with(move |state| {
@@ -226,19 +216,26 @@ impl UI {
             main_notebook.set_current_page(Some(row.index() as u32));
         });
 
-        btn_continue_reading.connect_button_release_event(
-            glib::clone!(@strong app_runtime => move |_, _| {
-                app_runtime.update_state_with(move |state| {
-                    if let Some(last_read) = state.history.clone().read().find_last_read() {
-                        if let Some(novel) = state.get_by_id(last_read.novel_id) {
-                            state.read_novel(novel);
-                        }
+        btn_continue_reading.connect_button_release_event(glib::clone!(@strong app_runtime => move |_, _| {
+            app_runtime.update_state_with(move |state| {
+                if let Some(last_read) = state.history.clone().read().find_last_read() {
+                    if let Some(novel) = state.get_by_id(last_read.novel_id) {
+                        state.read_novel(novel);
                     }
-                });
+                }
+            });
 
-                gtk::Inhibit(false)
-            }),
-        );
+            gtk::Inhibit(false)
+        }));
+
+        btn_reading_type.connect_clicked(glib::clone!(@strong app_runtime => move |btn| {
+            btn.set_visible(false);
+            app_runtime.update_state_with(|state| {
+                let mut novel = state.currently_reading.novel.read().clone().unwrap();
+                novel = state.update_novel_status(novel.clone(), NovelStatus::Completed);
+                state.ui.update_reading_now(&Some(novel));
+            })
+        }));
 
         self.main_window
             .connect_destroy(glib::clone!(@strong app_runtime => move |_| {
@@ -247,8 +244,8 @@ impl UI {
                 });
             }));
 
-        self.main_window.connect_window_state_event(
-            glib::clone!(@strong app_runtime => move |_w, e| {
+        self.main_window
+            .connect_window_state_event(glib::clone!(@strong app_runtime => move |_w, e| {
                 // Left the iconified state (deiconified)
                 if e.changed_mask() == gdk::WindowState::ICONIFIED {
                     app_runtime.update_state_with(move |state| {
@@ -262,12 +259,11 @@ impl UI {
                 }
 
                 gtk::Inhibit(false)
-            }),
-        );
+            }));
 
         // Update the `selected_page` value
-        self.list_notebook.connect_page_notify(
-            glib::clone!(@strong app_runtime => move |notebook| {
+        self.list_notebook
+            .connect_page_notify(glib::clone!(@strong app_runtime => move |notebook| {
                 let page = notebook.page();
 
                 // Ignore pages above 4, so the filter page.
@@ -277,8 +273,7 @@ impl UI {
                         state.ui.lists.active_page = page;
                     });
                 }
-            }),
-        );
+            }));
     }
 
     /// Populate `gtk:ComboBoxText` from a list a `S`s, where `S` can be `String`, `str` or their refs.
@@ -288,11 +283,7 @@ impl UI {
         }
     }
 
-    fn populate_language_combobox(
-        &self,
-        combobox: &gtk::ComboBoxText,
-        hashmap: &HashMap<String, String>,
-    ) {
+    fn populate_language_combobox(&self, combobox: &gtk::ComboBoxText, hashmap: &HashMap<String, String>) {
         let mut as_vec: Vec<_> = hashmap.iter().collect();
         as_vec.sort_by_key(|a| a.1);
 
@@ -304,17 +295,13 @@ impl UI {
 
     pub fn init_menu(&self, settings: &Settings) {
         let view_selection_listbox = self.builder.get::<gtk::ListBox>("view_selection_listbox");
-        let show_sidebar_checkmenuitem = self
-            .builder
-            .get::<gtk::CheckMenuItem>("show_sidebar_checkmenuitem");
+        let show_sidebar_checkmenuitem = self.builder.get::<gtk::CheckMenuItem>("show_sidebar_checkmenuitem");
 
         // Triggers the `toggle_sidebar` since that is connected to the activation
         show_sidebar_checkmenuitem.set_active(settings.general.show_sidebar);
         view_selection_listbox.set_visible(settings.general.show_sidebar);
 
-        let toggle_novel_recognition = self
-            .builder
-            .get::<gtk::CheckMenuItem>("toggle_novel_recognition");
+        let toggle_novel_recognition = self.builder.get::<gtk::CheckMenuItem>("toggle_novel_recognition");
 
         // `toggle_novel_recognition`
         toggle_novel_recognition.set_active(settings.novel_recognition.enable);
@@ -327,9 +314,7 @@ impl UI {
 
     /// Show reading now notebook page.
     pub fn show_reading_now(&self) {
-        let reading_now_listboxrow = self
-            .builder
-            .get::<gtk::ListBoxRow>("reading_now_listboxrow");
+        let reading_now_listboxrow = self.builder.get::<gtk::ListBoxRow>("reading_now_listboxrow");
         reading_now_listboxrow.activate();
 
         self.main_notebook.set_current_page(Some(0));
@@ -403,10 +388,7 @@ impl UI {
 
     /// Open novel dialog window and show reading url entry field with focus.
     pub fn show_novel_dialog_reading_settings(&mut self, novel: &Novel) {
-        debug!(
-            "ui::show_novel_dialog_reading_settings | novel: {:?}",
-            novel
-        );
+        debug!("ui::show_novel_dialog_reading_settings | novel: {:?}", novel);
         self.novel_dialog.notebook.set_page(0);
         self.novel_dialog.info_notebook.set_page(2);
         self.novel_dialog.update(&self.builder, novel);
@@ -429,11 +411,7 @@ impl UI {
     pub fn toggle_update_menu(&self, show: bool) {
         let update_btn = self.builder.get::<gtk::Label>("menu_update_label");
 
-        update_btn.set_markup(&format!(
-            "<a href=\"{}\">{}</a>",
-            UPDATE_LINK,
-            &fl!("menu-update")
-        ));
+        update_btn.set_markup(&format!("<a href=\"{}\">{}</a>", UPDATE_LINK, &fl!("menu-update")));
 
         // This seeimgly does nothing but eh
         update_btn.set_visible(show);

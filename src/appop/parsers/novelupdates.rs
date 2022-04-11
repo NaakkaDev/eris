@@ -76,11 +76,7 @@ impl ParseNovel for NovelUpdates {
     }
 
     fn parse_title(&self) -> String {
-        self.document
-            .select(Class("seriestitlenu"))
-            .next()
-            .unwrap()
-            .text()
+        self.document.select(Class("seriestitlenu")).next().unwrap().text()
     }
 
     fn parse_image(&self, novel_id: &str) -> Vec<String> {
@@ -158,12 +154,7 @@ impl ParseNovel for NovelUpdates {
     }
 
     fn parse_type(&self) -> NovelType {
-        let novel_type = self
-            .document
-            .select(Attr("id", "showtype"))
-            .next()
-            .unwrap()
-            .text();
+        let novel_type = self.document.select(Attr("id", "showtype")).next().unwrap().text();
 
         NovelType::from_str(&novel_type).unwrap()
     }
@@ -200,10 +191,7 @@ impl ParseNovel for NovelUpdates {
         // Collect potential chapter numbers in a vector
         let mut potential_chapters = vec![];
         for target in chapter_strings {
-            if let Some(index) = strings
-                .iter()
-                .position(|r| r.to_lowercase().contains(&target))
-            {
+            if let Some(index) = strings.iter().position(|r| r.to_lowercase().contains(&target)) {
                 let mut n = 1_usize;
                 while strings.len() > index + n {
                     if let Ok(chapters) = numeric_from_str::<i32>(strings[index + n]) {
@@ -244,10 +232,7 @@ impl ParseNovel for NovelUpdates {
         let mut side_stories = 0;
         let mut added_items = vec![];
         for target in side_story_strings {
-            if let Some(index) = strings
-                .iter()
-                .position(|r| r.to_lowercase().contains(&target))
-            {
+            if let Some(index) = strings.iter().position(|r| r.to_lowercase().contains(&target)) {
                 let mut n = 1_usize;
                 while strings.len() > index + n {
                     if let Ok(sides) = numeric_from_str::<i32>(strings[index + n]) {
@@ -278,10 +263,7 @@ impl ParseNovel for NovelUpdates {
         let volume_strings = ["volume", "ln volume", "wn volume"];
 
         for target in volume_strings {
-            if let Some(index) = strings
-                .iter()
-                .position(|r| r.to_lowercase().contains(&target))
-            {
+            if let Some(index) = strings.iter().position(|r| r.to_lowercase().contains(&target)) {
                 let mut n = 1_usize;
                 // Look through all the strings till a match is found
                 while strings.len() > index + n {

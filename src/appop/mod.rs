@@ -103,11 +103,7 @@ impl AppOp {
             }
         };
 
-        let targets = vec![gtk::TargetEntry::new(
-            "text/uri-list",
-            gtk::TargetFlags::OTHER_APP,
-            0,
-        )];
+        let targets = vec![gtk::TargetEntry::new("text/uri-list", gtk::TargetFlags::OTHER_APP, 0)];
 
         ui.main_window
             .drag_dest_set(gtk::DestDefaults::ALL, &targets, gdk::DragAction::COPY);
@@ -123,11 +119,7 @@ impl AppOp {
                         file.uri().into()
                     };
 
-                    match Path::new(&file_name)
-                        .extension()
-                        .and_then(OsStr::to_str)
-                        .unwrap_or("")
-                    {
+                    match Path::new(&file_name).extension().and_then(OsStr::to_str).unwrap_or("") {
                         "epub" => {
                             let epub_doc = EpubDoc::new(file_name.clone());
                             // If the epub file is not valid then display
@@ -151,20 +143,13 @@ impl AppOp {
                                     };
                                     let page_count = doc.get_num_pages();
 
-                                    let intro_key =
-                                        doc.resources.iter().find_map(|(k, (kk, _))| {
-                                            if kk
-                                                .clone()
-                                                .into_os_string()
-                                                .into_string()
-                                                .unwrap()
-                                                .contains("ntro")
-                                            {
-                                                Some(k)
-                                            } else {
-                                                None
-                                            }
-                                        });
+                                    let intro_key = doc.resources.iter().find_map(|(k, (kk, _))| {
+                                        if kk.clone().into_os_string().into_string().unwrap().contains("ntro") {
+                                            Some(k)
+                                        } else {
+                                            None
+                                        }
+                                    });
 
                                     let mut description = String::new();
                                     if let Some(key) = intro_key {
@@ -174,9 +159,7 @@ impl AppOp {
                                             doc.spine.insert(0, key.clone());
                                         }
                                         // If page number was found then the description can be populated
-                                        if let Some(page) =
-                                            doc.resource_id_to_chapter(intro_key.unwrap())
-                                        {
+                                        if let Some(page) = doc.resource_id_to_chapter(intro_key.unwrap()) {
                                             // Try to change the page
                                             match doc.set_current_page(page) {
                                                 Ok(_) => {
@@ -185,9 +168,7 @@ impl AppOp {
                                                     let intro_text = doc.get_current_str().ok();
                                                     // Hope the content is properly in a body-tag and
                                                     // get the text inside it for the `description` variable
-                                                    let html = Document::from(
-                                                        intro_text.unwrap().as_str(),
-                                                    );
+                                                    let html = Document::from(intro_text.unwrap().as_str());
                                                     for body in html.select(Name("body")) {
                                                         description.push_str(body.text().as_str());
                                                     }
@@ -210,9 +191,7 @@ impl AppOp {
 
                                     // Get cover image extension if it exists
                                     let cover_ext = if cover_data.is_some() {
-                                        let mime = doc
-                                            .get_resource_mime(&doc.get_cover_id().unwrap())
-                                            .unwrap();
+                                        let mime = doc.get_resource_mime(&doc.get_cover_id().unwrap()).unwrap();
                                         let cover_ext = if mime.contains("png") {
                                             "png".to_string()
                                         } else {
@@ -237,10 +216,7 @@ impl AppOp {
                                     };
 
                                     app_runtime_clone.update_state_with(move |state| {
-                                        state.add_novel_from_file(
-                                            Path::new(&file_name).to_path_buf(),
-                                            novel_file,
-                                        );
+                                        state.add_novel_from_file(Path::new(&file_name).to_path_buf(), novel_file);
                                     });
                                 }
                                 Err(e) => {
@@ -265,14 +241,12 @@ impl AppOp {
                             }
                         }
                         "json" => {
-                            app_runtime_clone.update_state_with(move |state| {
-                                match state.import_json_to_db(file_name) {
-                                    Ok(_) => {
-                                        state.ui.open_post_import_message(&state.app_runtime);
-                                    }
-                                    Err(e) => {
-                                        error!("{:?}", e);
-                                    }
+                            app_runtime_clone.update_state_with(move |state| match state.import_json(file_name) {
+                                Ok(_) => {
+                                    state.ui.open_post_import_message(&state.app_runtime);
+                                }
+                                Err(e) => {
+                                    error!("{:?}", e);
                                 }
                             });
                         }
@@ -321,8 +295,7 @@ impl AppOp {
         debug!("appop::init");
 
         let app_runtime = self.app_runtime.clone();
-        self.novel_recognition =
-            NovelRecognition::new(app_runtime, self.settings.read().novel_recognition.clone());
+        self.novel_recognition = NovelRecognition::new(app_runtime, self.settings.read().novel_recognition.clone());
         self.chapter_read_sender = Some(self.chapter_read_message());
         self.history_sender = Some(self.history_message());
         self.list_sort_sender = Some(self.list_sort_message());

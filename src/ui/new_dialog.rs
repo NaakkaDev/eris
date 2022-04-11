@@ -29,26 +29,16 @@ impl NewNovelDialog {
         builder.label_i18n("new_reading_status_label", &(fl!("reading-status") + ":"));
         builder.label_i18n("new_volumes_read_label", &(fl!("volumes-read") + ":"));
         builder.label_i18n("new_chapters_read_label", &(fl!("chapters-read") + ":"));
-        builder.label_i18n(
-            "new_side_stories_read_label",
-            &(fl!("side-stories-read") + ":"),
-        );
-        builder.label_i18n(
-            "new_novel_reading_url_label",
-            &(fl!("new-novel-reading-url") + ":"),
-        );
+        builder.label_i18n("new_side_stories_read_label", &(fl!("side-stories-read") + ":"));
+        builder.label_i18n("new_novel_reading_url_label", &(fl!("new-novel-reading-url") + ":"));
         builder.label_i18n("new_rec_keywords_label", &(fl!("new_rec_keywords") + ":"));
         builder.label_i18n("new_score_label", &(fl!("column-score") + ":"));
 
         let url_combobox = builder.get::<gtk::ComboBoxText>("new_novel_url_combobox");
-        let novel_list_status_comboboxtext =
-            builder.get::<gtk::ComboBoxText>("novel_list_status_comboboxtext");
-        let novel_volumes_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_volumes_read_spinbutton");
-        let novel_chapters_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_chapters_read_spinbutton");
-        let novel_side_stories_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_side_stories_read_spinbutton");
+        let novel_list_status_comboboxtext = builder.get::<gtk::ComboBoxText>("novel_list_status_comboboxtext");
+        let novel_volumes_read_spinbutton = builder.get::<gtk::SpinButton>("novel_volumes_read_spinbutton");
+        let novel_chapters_read_spinbutton = builder.get::<gtk::SpinButton>("novel_chapters_read_spinbutton");
+        let novel_side_stories_read_spinbutton = builder.get::<gtk::SpinButton>("novel_side_stories_read_spinbutton");
 
         novel_volumes_read_spinbutton.set_range(0.0, 1_000_000.0);
         novel_chapters_read_spinbutton.set_range(0.0, 1_000_000.0);
@@ -64,14 +54,10 @@ impl NewNovelDialog {
     pub fn connect(&self, builder: &gtk::Builder, app_runtime: AppRuntime, url_list: Vec<String>) {
         let novel_url_entry = builder.get::<gtk::Entry>("novel_url_entry");
         let url_combobox = builder.get::<gtk::ComboBoxText>("new_novel_url_combobox");
-        let novel_list_status_comboboxtext =
-            builder.get::<gtk::ComboBoxText>("novel_list_status_comboboxtext");
-        let novel_volumes_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_volumes_read_spinbutton");
-        let novel_chapters_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_chapters_read_spinbutton");
-        let novel_side_stories_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_side_stories_read_spinbutton");
+        let novel_list_status_comboboxtext = builder.get::<gtk::ComboBoxText>("novel_list_status_comboboxtext");
+        let novel_volumes_read_spinbutton = builder.get::<gtk::SpinButton>("novel_volumes_read_spinbutton");
+        let novel_chapters_read_spinbutton = builder.get::<gtk::SpinButton>("novel_chapters_read_spinbutton");
+        let novel_side_stories_read_spinbutton = builder.get::<gtk::SpinButton>("novel_side_stories_read_spinbutton");
         let novel_keywords_entry = builder.get::<gtk::Entry>("novel_keywords_entry");
         let new_novel_score = builder.get::<gtk::ComboBoxText>("new_novel_score");
         let novel_reading_url_entry = builder.get::<gtk::Entry>("novel_reading_url_entry");
@@ -88,10 +74,9 @@ impl NewNovelDialog {
                                 url_combobox.set_active(Some(index as u32));
                                 // Update the url entry text by removing the domain name and such.
                                 entry.set_text(
-                                    &entry.text().replace(
-                                        &url_combobox.active_text().unwrap().to_string(),
-                                        "",
-                                    ),
+                                    &entry
+                                        .text()
+                                        .replace(&url_combobox.active_text().unwrap().to_string(), ""),
                                 );
                                 // Guess the keyword from the slug, probably wrong most of the time.
                                 keywords_entry.set_text(&guess_keyword(&entry.text().to_string()));
@@ -172,10 +157,8 @@ impl NewNovelDialog {
 
     pub fn update(&self, builder: &gtk::Builder) {
         let novel_url_entry = builder.get::<gtk::Entry>("novel_url_entry");
-        let novel_volumes_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_volumes_read_spinbutton");
-        let novel_chapters_read_spinbutton =
-            builder.get::<gtk::SpinButton>("novel_chapters_read_spinbutton");
+        let novel_volumes_read_spinbutton = builder.get::<gtk::SpinButton>("novel_volumes_read_spinbutton");
+        let novel_chapters_read_spinbutton = builder.get::<gtk::SpinButton>("novel_chapters_read_spinbutton");
         let novel_keywords_entry = builder.get::<gtk::Entry>("novel_keywords_entry");
 
         let reading_novel_title_label = builder.get::<gtk::Label>("reading_novel_title_label");
@@ -214,17 +197,11 @@ impl NewNovelDialog {
             }
             _ => {
                 // Try to guess the correct slug from the novel title
-                slug.push_str(&novel_title_to_slug(
-                    &reading_novel_title_label.text().to_string(),
-                ));
-                keyword.push_str(&guess_keyword(
-                    &reading_novel_title_label.text().to_string(),
-                ));
+                slug.push_str(&novel_title_to_slug(&reading_novel_title_label.text().to_string()));
+                keyword.push_str(&guess_keyword(&reading_novel_title_label.text().to_string()));
 
                 // Guess the keyword from the novel title
-                keyword.push_str(&guess_keyword(
-                    &reading_novel_title_label.text().to_string(),
-                ));
+                keyword.push_str(&guess_keyword(&reading_novel_title_label.text().to_string()));
             }
         }
 

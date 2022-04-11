@@ -19,10 +19,7 @@ pub struct NovelRecognition {
 }
 
 impl NovelRecognition {
-    pub fn new(
-        app_runtime: AppRuntime,
-        settings: NovelRecognitionSettings,
-    ) -> Option<NovelRecognition> {
+    pub fn new(app_runtime: AppRuntime, settings: NovelRecognitionSettings) -> Option<NovelRecognition> {
         if !settings.enable {
             return None;
         }
@@ -46,10 +43,7 @@ impl NovelRecognition {
                 }
                 for wtitle in &wtitles {
                     if wtitle.contains("<num>") || wtitle.contains("<any>") {
-                        let regex_str = wtitle
-                            .replace("<num>", r"(\d+)")
-                            .replace("<any>", r".?")
-                            .to_string();
+                        let regex_str = wtitle.replace("<num>", r"(\d+)").replace("<any>", r".?").to_string();
                         if let Ok(re) = Regex::new(&regex_str) {
                             if let Some(_caps) = re.captures(&title) {
                                 found_title = Some(title);
@@ -66,13 +60,16 @@ impl NovelRecognition {
             tx.send(found_title).expect("Cannot send message");
         });
 
-        rx.attach(None, glib::clone!(@strong app_runtime => @default-return glib::Continue(false), move |value| {
-            app_runtime.update_state_with(move |state| {
-                state.reading_recognition(value);
-            });
+        rx.attach(
+            None,
+            glib::clone!(@strong app_runtime => @default-return glib::Continue(false), move |value| {
+                app_runtime.update_state_with(move |state| {
+                    state.reading_recognition(value);
+                });
 
-            glib::Continue(true)
-        }));
+                glib::Continue(true)
+            }),
+        );
 
         let thread_handle = scheduler.watch_thread(Duration::from_secs(SCHEDULE_SECONDS as u64));
 
@@ -155,8 +152,7 @@ impl AppOp {
             // No idea if this thing is needed.
             handle.join().expect("Uh oh!");
 
-            self.novel_recognition =
-                NovelRecognition::new(self.app_runtime.clone(), settings.novel_recognition);
+            self.novel_recognition = NovelRecognition::new(self.app_runtime.clone(), settings.novel_recognition);
         }
     }
 
@@ -205,12 +201,11 @@ impl AppOp {
             // Check if the currently set novel is the same one that was found
             // based on the title
             let same_novel = if let Some(found_novel) = &novel {
-                let is_true =
-                    if let Some(current_novel) = self.currently_reading.novel.read().as_ref() {
-                        current_novel.id == found_novel.id
-                    } else {
-                        false
-                    };
+                let is_true = if let Some(current_novel) = self.currently_reading.novel.read().as_ref() {
+                    current_novel.id == found_novel.id
+                } else {
+                    false
+                };
                 is_true
             } else {
                 self.currently_reading.novel.read().as_ref().is_none()
@@ -229,18 +224,14 @@ impl AppOp {
             // Check if the currently reading title is the same as the current one saved
             // Add "novel found boolean" to the "id" string
             let current_title_id = format!("{}-{}", window_title.clone(), novel.is_some());
-            let already_done =
-                if let Some(current_title) = self.currently_reading.title.read().as_ref() {
-                    current_title == &current_title_id
-                } else {
-                    false
-                };
+            let already_done = if let Some(current_title) = self.currently_reading.title.read().as_ref() {
+                current_title == &current_title_id
+            } else {
+                false
+            };
 
             // Set currently_reading.title
-            self.currently_reading
-                .title
-                .write()
-                .replace(current_title_id);
+            self.currently_reading.title.write().replace(current_title_id);
 
             // Do nothing if things needed to be done are already done and
             // the currently_reading timestamp was "used"
@@ -291,23 +282,14 @@ impl AppOp {
             }
 
             // Update the reading now UI
+            self.ui.update_reading_now(&novel);
             self.ui
-                .update_reading_now(&novel, &novel_title, &data, &source);
+                .update_reading_now_chapters(&novel, &novel_title, &data, &source);
 
             // Decide if the Reading Now view should be shown
             // If novel is none then it was not found in the db
-            if (novel.is_none()
-                && self
-                    .settings
-                    .read()
-                    .novel_recognition
-                    .when_not_novel_go_to_reading)
-                || novel.is_some()
-                    && self
-                        .settings
-                        .read()
-                        .novel_recognition
-                        .when_novel_go_to_reading
+            if (novel.is_none() && self.settings.read().novel_recognition.when_not_novel_go_to_reading)
+                || novel.is_some() && self.settings.read().novel_recognition.when_novel_go_to_reading
             {
                 self.ui.show_reading_now_reading();
             }
@@ -332,22 +314,6 @@ impl AppOp {
         }
     }
 
-    /// Push a new keyword into novel settings `window_titles`.
-    pub fn update_novel_reading_keyword(&mut self, mut novel: Novel, keyword: String) {
-        debug!("Updated novel keywords with {:?}", keyword);
-
-        if let Some(keywords) = novel.settings.window_titles.as_mut() {
-            // Update
-            keywords.push(keyword);
-        } else {
-            // Add new
-            novel.settings.window_titles = Some(vec![keyword]);
-        }
-
-        // Save the changes
-        let _ = self.update_novel_in_db(novel.clone());
-    }
-
     fn find_novel_from_title(&self, title_strings: &[&str]) -> Option<Novel> {
         // Check if any title string in the list is an exact match
         // with either a novel title or novels recognition keywords
@@ -366,14 +332,10 @@ impl AppOp {
 fn is_reading_chapter(strings: &[&str]) -> bool {
     // Assumed minimum amount of strings in the list
     // when reading a chapter
-    let strings_len: Vec<(&str, usize)> =
-        vec![("WuxiaWorld", 3), ("BoxNovel", 3), ("Royal Road", 4)];
+    let strings_len: Vec<(&str, usize)> = vec![("WuxiaWorld", 3), ("BoxNovel", 3), ("Royal Road", 4)];
 
     for (key, value) in strings_len.iter() {
-        if strings
-            .iter()
-            .any(|&s| s.to_lowercase().contains(&key.to_lowercase()))
-        {
+        if strings.iter().any(|&s| s.to_lowercase().contains(&key.to_lowercase())) {
             return &strings.len() >= value;
         }
     }
@@ -419,19 +381,10 @@ fn extract_novel_name_from_title(title_strings: &[&str]) -> String {
 
 fn extract_source_from_title(title_strings: &[&str]) -> String {
     // Position (from end) of the source (website name) based on the browser being used
-    let position_by_browser = vec![
-        ("firefox", 1),
-        ("google", 1),
-        ("opera", 1),
-        ("edge", 2),
-        ("brave", 1),
-    ];
+    let position_by_browser = vec![("firefox", 1), ("google", 1), ("opera", 1), ("edge", 2), ("brave", 1)];
 
     for (browser, pos) in position_by_browser.iter() {
-        if title_strings
-            .iter()
-            .any(|&s| s.to_lowercase().contains(browser))
-        {
+        if title_strings.iter().any(|&s| s.to_lowercase().contains(browser)) {
             // If the position is 1 then get the second last item
             // e.g:
             //                       --V--
@@ -460,8 +413,7 @@ fn extract_source_from_title(title_strings: &[&str]) -> String {
 /// novel would have so many parts in a chapter anyway.)
 fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
     let mut ignore_part = false;
-    let mut novel_recognition_data =
-        NovelRecognitionData::new(0, 0.0, 0, None, "Source".to_string(), false);
+    let mut novel_recognition_data = NovelRecognitionData::new(0, 0.0, 0, None, "Source".to_string(), false);
 
     let volume_res = [
         r"v(?:ol)?(?:ume)?[\.:;\-_]?\s?(\d+)", // ol or olume or . or : or ; or - or _ or space after `v`

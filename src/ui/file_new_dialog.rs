@@ -29,23 +29,11 @@ impl FileNewNovelDialog {
         builder.label_i18n("new_file_title_label", &(fl!("title-label") + ":"));
         builder.label_i18n("new_file_authors_label", &(fl!("novel-author") + ":"));
         builder.label_i18n("new_file_genres_label", &(fl!("novel-genre") + ":"));
-        builder.label_i18n(
-            "new_file_chapters_read_label",
-            &(fl!("chapters-read") + ":"),
-        );
-        builder.label_i18n(
-            "new_file_chapters_available_label",
-            &(fl!("chapters-available") + ":"),
-        );
-        builder.label_i18n(
-            "new_file_reading_status_label",
-            &(fl!("reading-status") + ":"),
-        );
+        builder.label_i18n("new_file_chapters_read_label", &(fl!("chapters-read") + ":"));
+        builder.label_i18n("new_file_chapters_available_label", &(fl!("chapters-available") + ":"));
+        builder.label_i18n("new_file_reading_status_label", &(fl!("reading-status") + ":"));
         builder.label_i18n("new_file_novel_url_label", &(fl!("novel-url") + ":"));
-        builder.label_i18n(
-            "new_file_description_label",
-            &(fl!("novel-description") + ":"),
-        );
+        builder.label_i18n("new_file_description_label", &(fl!("novel-description") + ":"));
 
         builder.checkbutton_i18n("file_new_novel_update", &fl!("update-from-url-checkbutton"));
 
@@ -72,8 +60,7 @@ impl FileNewNovelDialog {
         let novel_description = builder.get::<gtk::TextView>("file_new_novel_description");
 
         let novel_chapters_read = builder.get::<gtk::SpinButton>("file_new_chapters_read");
-        let novel_chapters_available =
-            builder.get::<gtk::SpinButton>("file_new_chapters_available");
+        let novel_chapters_available = builder.get::<gtk::SpinButton>("file_new_chapters_available");
         let novel_url_entry = builder.get::<gtk::Entry>("file_new_novel_url_entry");
 
         let url_combobox = self.url_combobox.clone();
@@ -87,10 +74,9 @@ impl FileNewNovelDialog {
                                 url_combobox.set_active(Some(index as u32));
                                 // Update the url entry text by removing the domain name and such.
                                 entry.set_text(
-                                    &entry.text().replace(
-                                        &url_combobox.active_text().unwrap().to_string(),
-                                        "",
-                                    ),
+                                    &entry
+                                        .text()
+                                        .replace(&url_combobox.active_text().unwrap().to_string(), ""),
                                 );
                             } else {
                                 // Set the combobox item to "unsupported/other"
@@ -168,8 +154,7 @@ impl FileNewNovelDialog {
         let novel_description = builder.get::<gtk::TextView>("file_new_novel_description");
 
         let novel_chapters_read = builder.get::<gtk::SpinButton>("file_new_chapters_read");
-        let novel_chapters_available =
-            builder.get::<gtk::SpinButton>("file_new_chapters_available");
+        let novel_chapters_available = builder.get::<gtk::SpinButton>("file_new_chapters_available");
 
         let novel_url_entry = builder.get::<gtk::Entry>("file_new_novel_url_entry");
         let novel_image = builder.get::<gtk::Image>("file_new_novel_cover");

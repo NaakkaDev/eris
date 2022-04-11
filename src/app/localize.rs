@@ -14,9 +14,7 @@ use std::collections::HashMap;
 pub fn available_languages() -> HashMap<String, String> {
     let mut lang_hashmap: HashMap<String, String> = HashMap::new();
 
-    let available_languages = localizer()
-        .language_loader()
-        .available_languages(&Localizations);
+    let available_languages = localizer().language_loader().available_languages(&Localizations);
     if let Ok(languages) = available_languages {
         let languages_dirs = languages
             .iter()

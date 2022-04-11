@@ -96,19 +96,15 @@ fn new(gtk_app: gtk::Application) -> AppRuntime {
         state.ui.init_menu(&state.settings.read());
 
         state.ui.connect(state.app_runtime.clone());
-        state.ui.lists.connect(
-            &state.ui.builder,
-            state.app_runtime.clone(),
-            &state.settings.read(),
-        );
+        state
+            .ui
+            .lists
+            .connect(&state.ui.builder, state.app_runtime.clone(), &state.settings.read());
         state
             .ui
             .filter
             .connect(state.app_runtime.clone(), &state.ui.list_notebook);
-        state
-            .ui
-            .history
-            .connect(&state.ui.builder, state.app_runtime.clone());
+        state.ui.history.connect(&state.ui.builder, state.app_runtime.clone());
         state
             .ui
             .lists
@@ -117,25 +113,22 @@ fn new(gtk_app: gtk::Application) -> AppRuntime {
             .ui
             .filter
             .connect_mouse_actions(state.app_runtime.clone(), &state.settings.read());
-        state.ui.history.connect_mouse_actions(
-            &state.ui.builder,
-            state.app_runtime.clone(),
-            &state.settings.read(),
-        );
+        state
+            .ui
+            .history
+            .connect_mouse_actions(&state.ui.builder, state.app_runtime.clone(), &state.settings.read());
         state
             .ui
             .novel_dialog
             .connect(&state.ui.builder, state.app_runtime.clone());
-        state.ui.new_dialog.connect(
-            &state.ui.builder,
-            state.app_runtime.clone(),
-            state.ui.url_list.clone(),
-        );
-        state.ui.file_new_dialog.connect(
-            &state.ui.builder,
-            state.app_runtime.clone(),
-            state.ui.url_list.clone(),
-        );
+        state
+            .ui
+            .new_dialog
+            .connect(&state.ui.builder, state.app_runtime.clone(), state.ui.url_list.clone());
+        state
+            .ui
+            .file_new_dialog
+            .connect(&state.ui.builder, state.app_runtime.clone(), state.ui.url_list.clone());
         state
             .ui
             .settings_dialog
@@ -179,8 +172,7 @@ pub fn on_startup(gtk_app: &gtk::Application) {
             if window_state_enabled {
                 let window = window.upcast_ref();
                 // Get the current window state and save it to file
-                let window_state =
-                    WindowState::from_window_with_old_values(window, old_window_state.clone());
+                let window_state = WindowState::from_window_with_old_values(window, old_window_state.clone());
                 if let Err(err) = window_state.write_to_file() {
                     error!("Cannot save the window state to file! {:?}", err);
                 }

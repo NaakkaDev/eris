@@ -33,15 +33,18 @@ impl AppOp {
 
             // Show the update available gui element when receiving a message where the value is `true`,
             // nothing should send a `false` though.
-            rx.attach(None, glib::clone!(@strong app_runtime => @default-return glib::Continue(false), move |value| {
-                if value {
-                    app_runtime.update_state_with(move |state| {
-                        state.ui.toggle_update_menu(true)
-                    });
-                }
+            rx.attach(
+                None,
+                glib::clone!(@strong app_runtime => @default-return glib::Continue(false), move |value| {
+                    if value {
+                        app_runtime.update_state_with(move |state| {
+                            state.ui.toggle_update_menu(true)
+                        });
+                    }
 
-                glib::Continue(true)
-            }));
+                    glib::Continue(true)
+                }),
+            );
         }
     }
 }

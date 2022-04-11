@@ -85,11 +85,7 @@ impl ParseNovel for Webnovel {
             .text();
 
         self.document
-            .select(
-                Class("det-info")
-                    .descendant(Name("div"))
-                    .descendant(Name("h2")),
-            )
+            .select(Class("det-info").descendant(Name("div")).descendant(Name("h2")))
             .next()
             .unwrap()
             .text()
@@ -147,12 +143,12 @@ impl ParseNovel for Webnovel {
     fn parse_author(&self) -> Vec<String> {
         let meta_keywords = self
             .document
-            .select(Attr("name", "keywords"))
+            .select(Attr("property", "og:title"))
             .next()
             .unwrap()
             .attr("content")
             .unwrap()
-            .split(',')
+            .split('-')
             .map(|t| t.trim().to_string())
             .collect::<Vec<String>>();
 

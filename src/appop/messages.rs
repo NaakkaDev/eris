@@ -21,14 +21,7 @@ impl AppOp {
     }
 
     /// Send the `chapter_read` message.
-    pub fn chapter_read_send(
-        &self,
-        volume: i32,
-        chapter: f32,
-        side: i32,
-        novel: Novel,
-        exact_num: bool,
-    ) {
+    pub fn chapter_read_send(&self, volume: i32, chapter: f32, side: i32, novel: Novel, exact_num: bool) {
         self.chapter_read_sender
             .as_ref()
             .unwrap()
@@ -69,13 +62,16 @@ impl AppOp {
     pub fn list_sort_message(&self) -> glib::Sender<SortingMessage> {
         let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-        rx.attach(None, glib::clone!(@strong self.app_runtime as app_runtime => @default-return glib::Continue(false), move |data| {
-            app_runtime.update_state_with(move |state| {
-                state.update_list_sort_order(data);
-            });
+        rx.attach(
+            None,
+            glib::clone!(@strong self.app_runtime as app_runtime => @default-return glib::Continue(false), move |data| {
+                app_runtime.update_state_with(move |state| {
+                    state.update_list_sort_order(data);
+                });
 
-            glib::Continue(true)
-        }));
+                glib::Continue(true)
+            }),
+        );
 
         tx
     }

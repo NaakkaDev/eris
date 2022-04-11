@@ -1,4 +1,4 @@
-use crate::app::novel::Novel;
+use crate::app::novel::{Novel, NovelStatus};
 use crate::ui::UI;
 
 use crate::app::AppRuntime;
@@ -18,9 +18,7 @@ impl UI {
     }
 
     pub fn show_reading_now_reading(&self) {
-        let reading_now_listboxrow = self
-            .builder
-            .get::<gtk::ListBoxRow>("reading_now_listboxrow");
+        let reading_now_listboxrow = self.builder.get::<gtk::ListBoxRow>("reading_now_listboxrow");
         reading_now_listboxrow.activate();
 
         // Show the reading now page
@@ -30,12 +28,8 @@ impl UI {
 
     /// Update currently reading UI elements novel name and chapter number.
     pub fn update_currently_reading(&self, novel: &Novel) {
-        let previously_read_title_label = self
-            .builder
-            .get::<gtk::Label>("previously_read_title_label");
-        let previously_read_chapter_label = self
-            .builder
-            .get::<gtk::Label>("previously_read_chapter_label");
+        let previously_read_title_label = self.builder.get::<gtk::Label>("previously_read_title_label");
+        let previously_read_chapter_label = self.builder.get::<gtk::Label>("previously_read_chapter_label");
         let button = self.builder.get::<gtk::Button>("btn_continue_reading");
 
         previously_read_title_label.set_text(&novel.title);
@@ -67,128 +61,69 @@ impl UI {
         button.set_sensitive(true);
     }
 
-    pub fn update_reading_now_volume(&self, volume_num: i32, volume_avail: i32) {
-        let mut reading_now_vol = String::new();
-        reading_now_vol.push_str(&volume_num.to_string());
-        if volume_avail > 0 {
-            reading_now_vol.push_str(" / ");
-            reading_now_vol.push_str(&volume_avail.to_string());
-        }
-
-        let reading_volume_text = self.builder.get::<gtk::Label>("reading_volume_label");
+    pub fn update_reading_now_volume(&self, volume_num: i32) {
+        let reading_volume_label = self.builder.get::<gtk::Label>("reading_volume_label");
+        let reading_volumes_box = self.builder.get::<gtk::Box>("reading_volumes_box");
         let reading_volume_number = self.builder.get::<gtk::Label>("reading_volume_number");
 
-        reading_volume_text.set_visible(volume_num > 0);
-        reading_volume_number.set_visible(volume_num > 0);
+        reading_volume_label.set_visible(volume_num > 0);
+        reading_volumes_box.set_child_visible(volume_num > 0);
 
-        reading_volume_number.set_label(&reading_now_vol);
+        reading_volume_number.set_label(&volume_num.to_string());
     }
 
-    pub fn update_reading_now_chapter(&self, chapter_num: f32, chapter_avail: f32) {
-        let mut reading_now_ch = String::new();
-        reading_now_ch.push_str(&chapter_num.to_string());
-        if chapter_avail > 0.0 {
-            reading_now_ch.push_str(" / ");
-            reading_now_ch.push_str(&chapter_avail.to_string());
-        }
-
+    pub fn update_reading_now_chapter(&self, chapter_num: f32) {
         let reading_chapter_number = self.builder.get::<gtk::Label>("reading_chapter_number");
 
-        reading_chapter_number.set_label(&reading_now_ch);
+        reading_chapter_number.set_label(&chapter_num.to_string());
     }
 
-    pub fn update_reading_now_side_stories(&self, side_story_num: i32, side_story_avail: i32) {
-        let mut reading_now_ss = String::new();
-        reading_now_ss.push_str(&side_story_num.to_string());
-        if side_story_avail > 0 {
-            reading_now_ss.push_str(" / ");
-            reading_now_ss.push_str(&side_story_avail.to_string());
-        }
-
-        let reading_side_story_text = self.builder.get::<gtk::Label>("reading_side_story_label");
+    pub fn update_reading_now_side_stories(&self, side_story_num: i32) {
+        let reading_side_story_label = self.builder.get::<gtk::Label>("reading_side_story_label");
+        let reading_side_stories_box = self.builder.get::<gtk::Box>("reading_side_stories_box");
         let reading_side_story_number = self.builder.get::<gtk::Label>("reading_side_story_number");
 
-        reading_side_story_text.set_visible(side_story_num > 0);
-        reading_side_story_number.set_visible(side_story_num > 0);
+        reading_side_story_label.set_visible(side_story_num > 0);
+        reading_side_stories_box.set_child_visible(side_story_num > 0);
 
-        reading_side_story_number.set_label(&reading_now_ss);
+        reading_side_story_number.set_label(&side_story_num.to_string());
     }
 
-    /// Update reading now view which contains minimal novel information and
-    /// current chapter/volume being read.
-    pub fn update_reading_now(
-        &mut self,
-        novel: &Option<Novel>,
-        novel_name: &str,
-        data: &NovelRecognitionData,
-        source: &str,
-    ) {
+    /// Update reading now view which contains minimal novel information.
+    pub fn update_reading_now(&mut self, novel: &Option<Novel>) {
         let image = self.builder.get::<gtk::Image>("reading_novel_image");
         let reading_novel_title = self.builder.get::<gtk::Label>("reading_novel_title_label");
-        let reading_novel_title_source =
-            self.builder.get::<gtk::Label>("reading_novel_source_label");
         let novel_info_box = self.builder.get::<gtk::Box>("novel_info_box");
-        let reading_novel_alt_title_text = self
-            .builder
-            .get::<gtk::TextView>("reading_novel_alt_title_text");
+        let reading_novel_alt_title_text = self.builder.get::<gtk::TextView>("reading_novel_alt_title_text");
         let reading_novel_detail_author_value = self
             .builder
             .get::<gtk::Label>("reading_novel_detail_author_value_label");
         let reading_novel_detail_artist_value = self
             .builder
             .get::<gtk::Label>("reading_novel_detail_artist_value_label");
-        let reading_novel_detail_genre_value = self
-            .builder
-            .get::<gtk::Label>("reading_novel_detail_genre_value_label");
-        let reading_novel_description_text = self
-            .builder
-            .get::<gtk::TextView>("reading_novel_description_text");
+        let reading_novel_detail_genre_value = self.builder.get::<gtk::Label>("reading_novel_detail_genre_value_label");
+        let reading_novel_description_text = self.builder.get::<gtk::TextView>("reading_novel_description_text");
         let reading_novel_slug = self.builder.get::<gtk::Label>("reading_novel_slug");
         let novel_not_found_box = self.builder.get::<gtk::Box>("novel_not_found_box");
         let reading_type = self.builder.get::<gtk::Label>("reading_type");
-        let reading_grid = self.builder.get::<gtk::Grid>("reading_grid");
+        let btn_reading_type = self.builder.get::<gtk::Button>("btn_reading_type");
         let alt_titles_box = self.builder.get::<gtk::Box>("alt_titles_box");
         let reading_artist_box = self.builder.get::<gtk::Box>("reading_artist_box");
 
-        let mut vol_avail = 0;
-        let mut ch_avail = 0.0;
-        let mut ss_avail = 0;
-
-        // Set the reading grid element visible if reading
-        // and the program has found potential sensible
-        // chapter numbers, otherwise set it to false as it is not needed
-        if data.chapter == 0.0 && data.side_story == 0 && data.volume == 0 {
-            reading_grid.set_visible(false);
-        } else {
-            reading_grid.set_visible(data.reading);
-        }
+        let reading_volume_max = self.builder.get::<gtk::Label>("reading_volume_number_max");
+        let reading_chapter_max = self.builder.get::<gtk::Label>("reading_chapter_number_max");
+        let reading_ss_max = self.builder.get::<gtk::Label>("reading_side_story_number_max");
 
         image.set_from_icon_name(Some("gtk-missing-image"), IconSize::Dialog);
-
-        if let Some(chapter_title) = data.chapter_title.clone() {
-            reading_novel_title_source.set_label(&format!(
-                "{} \"{}\" on {}",
-                fl!("reading"),
-                chapter_title,
-                source
-            ));
-        } else {
-            reading_novel_title_source.set_label(source);
-        }
 
         if let Some(novel) = novel {
             novel_not_found_box.set_visible(false);
             novel_info_box.set_visible(true);
 
-            vol_avail = novel.content.volumes;
-            ch_avail = novel.content.chapters;
-            ss_avail = novel.content.side_stories;
-
             if let Some(image_path) = novel.image.first() {
                 let full_path = &data_dir(image_path);
                 if full_path.exists() {
-                    let pb = Pixbuf::from_file_at_scale(full_path, 150, 215, false)
-                        .expect("Cannot get Pixbuf");
+                    let pb = Pixbuf::from_file_at_scale(full_path, 150, 215, false).expect("Cannot get Pixbuf");
 
                     image.set_from_pixbuf(Some(&pb));
                 }
@@ -203,6 +138,10 @@ impl UI {
             }
 
             let novel_type = format!("{} - {}", novel.novel_type.to_string(), novel.status());
+
+            if novel.status != NovelStatus::Completed {
+                btn_reading_type.set_visible(true);
+            }
 
             // Hide artist row if empty
             reading_artist_box.set_visible(!novel.artist.is_empty());
@@ -243,31 +182,80 @@ impl UI {
             } else {
                 reading_novel_slug.set_markup("");
             }
+
+            // Volumes available
+            let vol_avail = novel.content.volumes;
+            if vol_avail > 0 {
+                reading_volume_max.set_label(&vol_avail.to_string());
+            }
+
+            // Chapters available
+            let ch_avail = novel.content.chapters;
+            if ch_avail > 0.0 {
+                reading_chapter_max.set_label(&ch_avail.to_string());
+            }
+
+            // Side Stories availble
+            let ss_avail = novel.content.side_stories;
+            if ss_avail > 0 {
+                reading_ss_max.set_label(&ss_avail.to_string());
+            }
         } else {
             novel_not_found_box.set_visible(true);
             novel_info_box.set_visible(false);
 
-            reading_novel_title.set_label(novel_name);
             reading_type.set_text("");
+            reading_volume_max.set_label("?");
+            reading_chapter_max.set_label("?");
+            reading_ss_max.set_label("?");
 
             if self.reading_notebook.current_page() != Some(1) {
                 self.reading_notebook.set_current_page(Some(1));
             }
         }
+    }
 
-        self.update_reading_now_volume(data.volume, vol_avail);
-        self.update_reading_now_chapter(data.chapter, ch_avail);
-        self.update_reading_now_side_stories(data.side_story, ss_avail);
+    /// Update reading now view with chapter counts if known
+    pub fn update_reading_now_chapters(
+        &self,
+        novel: &Option<Novel>,
+        novel_name: &str,
+        data: &NovelRecognitionData,
+        source: &str,
+    ) {
+        let reading_novel_title = self.builder.get::<gtk::Label>("reading_novel_title_label");
+        let reading_grid = self.builder.get::<gtk::Grid>("reading_grid");
+        let reading_novel_title_source = self.builder.get::<gtk::Label>("reading_novel_source_label");
+
+        // Set the reading grid element visible if reading
+        // and the program has found potential sensible
+        // chapter numbers, otherwise set it to false as it is not needed
+        if data.chapter == 0.0 && data.side_story == 0 && data.volume == 0 {
+            reading_grid.set_visible(false);
+        } else {
+            reading_grid.set_visible(data.reading);
+        }
+
+        if let Some(chapter_title) = data.chapter_title.clone() {
+            reading_novel_title_source.set_label(&format!("{} \"{}\" on {}", fl!("reading"), chapter_title, source));
+        } else {
+            reading_novel_title_source.set_label(source);
+        }
+
+        if let Some(novel) = novel {
+            reading_novel_title.set_label(&novel.title);
+        } else {
+            reading_novel_title.set_label(novel_name);
+        }
+
+        self.update_reading_now_volume(data.volume);
+        self.update_reading_now_chapter(data.chapter);
+        self.update_reading_now_side_stories(data.side_story);
     }
 
     /// Show a `gtk::box` containing potential novel suggestions
     /// if the supplied `novels` is not empty.
-    pub fn show_potential_novels(
-        &self,
-        keyword: String,
-        novels: Vec<Novel>,
-        app_runtime: AppRuntime,
-    ) {
+    pub fn show_potential_novels(&self, keyword: String, novels: Vec<Novel>, app_runtime: AppRuntime) {
         let potential_box = self.builder.get::<gtk::Box>("potential_box");
         let potential_novels_box = self.builder.get::<gtk::Box>("potential_novels_box");
 
@@ -313,8 +301,7 @@ impl UI {
                     app_runtime.update_state_with(|state| {
                         if let Some(novel) = state.get_by_id(novel_id) {
                             state.update_novel_reading_keyword(novel.clone(), keyword);
-                            let novel_title = novel.clone().title;
-                            state.ui.update_reading_now(&Some(novel), &novel_title, &NovelRecognitionData::default(), "");
+                            state.ui.update_reading_now(&Some(novel));
                         }
                     });
                     gtk::Inhibit(true)

@@ -4,8 +4,7 @@ use crate::appop::AppOp;
 use crate::utils::gtk::BuilderExtManualCustom;
 use anyhow::Context;
 use gtk::prelude::{
-    CheckMenuItemExt, ComboBoxExt, EntryExt, FileChooserExt, SpinButtonExt, ToggleButtonExt,
-    WidgetExt,
+    CheckMenuItemExt, ComboBoxExt, EntryExt, FileChooserExt, SpinButtonExt, ToggleButtonExt, WidgetExt,
 };
 use parking_lot::RwLock;
 use std::process::Command;
@@ -40,44 +39,20 @@ impl AppOp {
 
         let mut settings = self.settings.write();
         settings.general.show_sidebar = view_selection_listbox.is_visible();
-        settings
-            .write_to_file()
-            .expect("Cannot write settings to file.");
+        settings.write_to_file().expect("Cannot write settings to file.");
     }
 
     pub fn update_settings(&mut self) {
         debug!("appop::update_settings");
         let builder = &self.ui.builder;
 
-        let mouse_2_action = self
-            .ui
-            .settings_dialog
-            .action_comboboxes
-            .get("mouse_2_action")
-            .unwrap();
-        let mouse_3_action = self
-            .ui
-            .settings_dialog
-            .action_comboboxes
-            .get("mouse_3_action")
-            .unwrap();
-        let mouse_4_action = self
-            .ui
-            .settings_dialog
-            .action_comboboxes
-            .get("mouse_4_action")
-            .unwrap();
-        let mouse_5_action = self
-            .ui
-            .settings_dialog
-            .action_comboboxes
-            .get("mouse_5_action")
-            .unwrap();
+        let mouse_2_action = self.ui.settings_dialog.action_comboboxes.get("mouse_2_action").unwrap();
+        let mouse_3_action = self.ui.settings_dialog.action_comboboxes.get("mouse_3_action").unwrap();
+        let mouse_4_action = self.ui.settings_dialog.action_comboboxes.get("mouse_4_action").unwrap();
+        let mouse_5_action = self.ui.settings_dialog.action_comboboxes.get("mouse_5_action").unwrap();
         let settings_startup_auto = builder.get::<gtk::CheckButton>("settings_startup_auto");
-        let settings_startup_minimized =
-            builder.get::<gtk::CheckButton>("settings_startup_minimized");
-        let settings_startup_check_update =
-            builder.get::<gtk::CheckButton>("settings_startup_check_update");
+        let settings_startup_minimized = builder.get::<gtk::CheckButton>("settings_startup_minimized");
+        let settings_startup_check_update = builder.get::<gtk::CheckButton>("settings_startup_check_update");
 
         let viscol_status = builder.get::<gtk::CheckButton>("viscol_status");
         let viscol_cco = builder.get::<gtk::CheckButton>("viscol_cco");
@@ -105,45 +80,22 @@ impl AppOp {
             builder.get::<gtk::Entry>("novel_recognition_title_keywords_entry");
         let novel_recognition_ignore_keywords_entry =
             builder.get::<gtk::Entry>("novel_recognition_ignore_keywords_entry");
-        let toggle_novel_recognition =
-            builder.get::<gtk::CheckMenuItem>("toggle_novel_recognition");
-        let novel_rec_found_go_to_reading =
-            builder.get::<gtk::CheckButton>("novel_rec_found_go_to_reading");
-        let novel_rec_not_found_go_to_reading =
-            builder.get::<gtk::CheckButton>("novel_rec_not_found_go_to_reading");
+        let toggle_novel_recognition = builder.get::<gtk::CheckMenuItem>("toggle_novel_recognition");
+        let novel_rec_found_go_to_reading = builder.get::<gtk::CheckButton>("novel_rec_found_go_to_reading");
+        let novel_rec_not_found_go_to_reading = builder.get::<gtk::CheckButton>("novel_rec_not_found_go_to_reading");
         let window_state_enabled = builder.get::<gtk::CheckButton>("settings_window_state_enabled");
 
         toggle_novel_recognition.set_active(novel_recognition_enabled_checkbutton.is_active());
 
         let mut new_settings = self.settings.write().clone();
-        new_settings.general.mouse_2_action = NovelListAction::from_i32(
-            mouse_2_action
-                .active_id()
-                .unwrap()
-                .parse::<i32>()
-                .unwrap_or(0),
-        );
-        new_settings.general.mouse_3_action = NovelListAction::from_i32(
-            mouse_3_action
-                .active_id()
-                .unwrap()
-                .parse::<i32>()
-                .unwrap_or(0),
-        );
-        new_settings.general.mouse_4_action = NovelListAction::from_i32(
-            mouse_4_action
-                .active_id()
-                .unwrap()
-                .parse::<i32>()
-                .unwrap_or(0),
-        );
-        new_settings.general.mouse_5_action = NovelListAction::from_i32(
-            mouse_5_action
-                .active_id()
-                .unwrap()
-                .parse::<i32>()
-                .unwrap_or(0),
-        );
+        new_settings.general.mouse_2_action =
+            NovelListAction::from_i32(mouse_2_action.active_id().unwrap().parse::<i32>().unwrap_or(0));
+        new_settings.general.mouse_3_action =
+            NovelListAction::from_i32(mouse_3_action.active_id().unwrap().parse::<i32>().unwrap_or(0));
+        new_settings.general.mouse_4_action =
+            NovelListAction::from_i32(mouse_4_action.active_id().unwrap().parse::<i32>().unwrap_or(0));
+        new_settings.general.mouse_5_action =
+            NovelListAction::from_i32(mouse_5_action.active_id().unwrap().parse::<i32>().unwrap_or(0));
 
         new_settings.list.visible_columns = vec![
             false, // id
@@ -159,9 +111,8 @@ impl AppOp {
             viscol_last.is_active(),
         ];
         new_settings.list.open_info_behavior = tab_behavior.active_id().unwrap().parse().unwrap();
-        new_settings.list.always_open_selected_tab = builder
-            .get::<gtk::CheckButton>("first_tab_always_checkbox")
-            .is_active();
+        new_settings.list.always_open_selected_tab =
+            builder.get::<gtk::CheckButton>("first_tab_always_checkbox").is_active();
 
         new_settings.general.reader = reader.filename();
         new_settings.general.reader_args = reader_args.text().to_string();
@@ -186,21 +137,15 @@ impl AppOp {
                 .parse::<i32>()
                 .unwrap(),
         );
-        new_settings.novel_recognition.autocomplete_ongoing =
-            novel_recognition_autocomplete_ongoing.is_active();
-        new_settings.novel_recognition.when_novel_go_to_reading =
-            novel_rec_found_go_to_reading.is_active();
-        new_settings.novel_recognition.when_not_novel_go_to_reading =
-            novel_rec_not_found_go_to_reading.is_active();
+        new_settings.novel_recognition.autocomplete_ongoing = novel_recognition_autocomplete_ongoing.is_active();
+        new_settings.novel_recognition.when_novel_go_to_reading = novel_rec_found_go_to_reading.is_active();
+        new_settings.novel_recognition.when_not_novel_go_to_reading = novel_rec_not_found_go_to_reading.is_active();
 
         let keywords: String = novel_recognition_title_keywords_entry.text().into();
         let keyword_vec: Vec<String> = keywords.split(',').map(|t| t.to_string()).collect();
 
         let ignore_keywords: String = novel_recognition_ignore_keywords_entry.text().into();
-        let ignore_keyword_vec: Vec<String> = ignore_keywords
-            .split(',')
-            .map(|t| t.trim().to_string())
-            .collect();
+        let ignore_keyword_vec: Vec<String> = ignore_keywords.split(',').map(|t| t.trim().to_string()).collect();
 
         new_settings.novel_recognition.title_keywords = keyword_vec;
         new_settings.novel_recognition.ignore_keywords = ignore_keyword_vec;
@@ -227,29 +172,20 @@ impl AppOp {
                     .ui
                     .filter
                     .connect_mouse_actions(state.app_runtime.clone(), &new_settings);
-                state.ui.history.connect_mouse_actions(
-                    &state.ui.builder,
-                    state.app_runtime.clone(),
-                    &new_settings,
-                );
+                state
+                    .ui
+                    .history
+                    .connect_mouse_actions(&state.ui.builder, state.app_runtime.clone(), &new_settings);
             }
 
             if old_settings.list.visible_columns != new_settings.list.visible_columns {
                 // Update the columns visibility if any of them changed
-                state
-                    .ui
-                    .lists
-                    .add_columns(state.app_runtime.clone(), &new_settings);
-                state
-                    .ui
-                    .filter
-                    .add_columns(state.app_runtime.clone(), &new_settings);
+                state.ui.lists.add_columns(state.app_runtime.clone(), &new_settings);
+                state.ui.filter.add_columns(state.app_runtime.clone(), &new_settings);
             }
 
-            if (old_settings.novel_recognition.title_keywords
-                != new_settings.novel_recognition.title_keywords)
-                || (old_settings.novel_recognition.ignore_keywords
-                    != new_settings.novel_recognition.ignore_keywords)
+            if (old_settings.novel_recognition.title_keywords != new_settings.novel_recognition.title_keywords)
+                || (old_settings.novel_recognition.ignore_keywords != new_settings.novel_recognition.ignore_keywords)
             {
                 // Restart novel recognition thread if either keywords change, if it is running
                 if state.novel_recognition.is_some() {

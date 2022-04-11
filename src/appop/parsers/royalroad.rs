@@ -34,10 +34,7 @@ impl ParseNovel for RoyalRoad {
             .map(|node| node.text())
             .collect::<Vec<String>>();
 
-        let status_strs = status_strings
-            .iter()
-            .map(|s| s.as_str())
-            .collect::<Vec<&str>>();
+        let status_strs = status_strings.iter().map(|s| s.as_str()).collect::<Vec<&str>>();
 
         let novel = Novel {
             id: novel_id,
@@ -68,11 +65,7 @@ impl ParseNovel for RoyalRoad {
 
     fn parse_title(&self) -> String {
         self.document
-            .select(
-                Class("fic-header")
-                    .descendant(Name("div"))
-                    .descendant(Name("h1")),
-            )
+            .select(Class("fic-header").descendant(Name("div")).descendant(Name("h1")))
             .next()
             .unwrap()
             .text()

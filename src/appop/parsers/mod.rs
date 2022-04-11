@@ -138,29 +138,18 @@ pub trait ParseNovel {
         0
     }
     fn parse_status(&self, strings: &[&str]) -> NovelStatus {
-        return if strings
-            .iter()
-            .any(|&s| s.to_lowercase().contains("complete"))
+        return if strings.iter().any(|&s| s.to_lowercase().contains("complete"))
             && self.parse_translated().is_some()
             && !self.parse_translated().unwrap()
         {
             NovelStatus::OriginalCompleted
-        } else if strings
-            .iter()
-            .any(|&s| s.to_lowercase().contains("complete"))
-        {
+        } else if strings.iter().any(|&s| s.to_lowercase().contains("complete")) {
             NovelStatus::Completed
-        } else if strings
-            .iter()
-            .any(|&s| s.to_lowercase().contains("ongoing"))
-        {
+        } else if strings.iter().any(|&s| s.to_lowercase().contains("ongoing")) {
             NovelStatus::Ongoing
         } else if strings.iter().any(|&s| s.to_lowercase().contains("hiatus")) {
             NovelStatus::Hiatus
-        } else if strings
-            .iter()
-            .any(|&s| s.to_lowercase().contains("dropped"))
-        {
+        } else if strings.iter().any(|&s| s.to_lowercase().contains("dropped")) {
             NovelStatus::Dropped
         } else {
             NovelStatus::Other

@@ -16,6 +16,7 @@ Webnovels can be added from a few sources:
 - [https://www.novelupdates.com](https://www.novelupdates.com)
 - [https://www.royalroad.com](https://www.royalroad.com)
 - [https://www.scribblehub.com](https://www.scribblehub.com)
+- [https://www.webnovel.com](https://www.webnovel.com/)
 - epub file
 
 Additionally the novel database can be exported to JSON and imported from JSON.
@@ -29,10 +30,10 @@ Any recognized webnovel will have its "chapters read" amount changed after 120 s
 The whole recognition system can be toggled on and off.
 
 ### Portability
-By default Eris saves the data into the OS's [data directory](https://docs.rs/dirs/4.0.0/dirs/fn.data_dir.html).
+By default Eris saves the data into the OS's [data directory](https://docs.rs/dirs/4.0.0/dirs/fn.data_dir.html). It is possible to use Eris as portable application though.
 
 #### Windows
-Eris can be used as portable application by creating a directory named `data` in the Eris root directory.
+Creating a directory named `data` in the Eris root directory.
 
 #### Linux
 For linux the `data` directory has to be in the same location as the binary file.
@@ -45,7 +46,7 @@ _Might_ work the same as linux.
 If the novel chapter URL is easily mutable, e.g: `https://example.com/novelname/chapter-1`
 then Eris can open the next chapter on your default browser. Assuming the reading URL is set in the novel settings.
 
-There is also an option for Eris to open a user specified third party reader with arguments
+There is also an option for Eris to open a file with user specified third party software with arguments
 (filename, page number).
 
 ### History

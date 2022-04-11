@@ -53,14 +53,8 @@ impl NovelDialog {
 
         builder.label_i18n("novel_alt_title_label", &fl!("novel-alt-title"));
         builder.label_i18n("novel_details_label", &fl!("novel-details"));
-        builder.label_i18n(
-            "novel_additional_details_label",
-            &fl!("novel-additional-details"),
-        );
-        builder.label_i18n(
-            "novel_detail_country_label",
-            &(fl!("novel-original-language") + ":"),
-        );
+        builder.label_i18n("novel_additional_details_label", &fl!("novel-additional-details"));
+        builder.label_i18n("novel_detail_country_label", &(fl!("novel-original-language") + ":"));
         builder.label_i18n("novel_detail_author_label", &(fl!("novel-author") + ":"));
         builder.label_i18n("novel_detail_artist_label", &(fl!("novel-artist") + ":"));
         builder.label_i18n("novel_detail_type_label", &fl!("novel-type"));
@@ -77,33 +71,18 @@ impl NovelDialog {
         builder.label_i18n("status_label", &(fl!("status") + ":"));
         builder.label_i18n("score_label", &(fl!("column-score") + ":"));
         builder.label_i18n("year_label", &(fl!("year") + ":"));
-        builder.label_i18n(
-            "original_publisher_label",
-            &(fl!("original-publishers") + ":"),
-        );
-        builder.label_i18n(
-            "english_publisher_label",
-            &(fl!("english-publishers") + ":"),
-        );
+        builder.label_i18n("original_publisher_label", &(fl!("original-publishers") + ":"));
+        builder.label_i18n("english_publisher_label", &(fl!("english-publishers") + ":"));
         builder.label_i18n("novel_tags_label", &fl!("novel-tags"));
-        builder.label_i18n(
-            "novel_settings_reading_url_label",
-            &(fl!("novel-reading-url") + ":"),
-        );
-        builder.label_i18n(
-            "novel_settings_reading_file_label",
-            &(fl!("novel-reading-file") + ":"),
-        );
+        builder.label_i18n("novel_settings_reading_url_label", &(fl!("novel-reading-url") + ":"));
+        builder.label_i18n("novel_settings_reading_file_label", &(fl!("novel-reading-file") + ":"));
         builder.label_i18n(
             "novel_settings_keywords_label",
             &(fl!("novel-rec-keywords") + " ( , ):"),
         );
         builder.label_i18n("novel_settings_notes_label", &(fl!("novel-notes") + ":"));
         builder.label_i18n("novel_settings_label", &fl!("settings"));
-        builder.label_i18n(
-            "list_and_settings_tab_label",
-            &fl!("novel-list-settings-tab"),
-        );
+        builder.label_i18n("list_and_settings_tab_label", &fl!("novel-list-settings-tab"));
         builder.label_i18n("novel_action_update_label", &fl!("novel-update-label"));
         builder.label_i18n("novel_action_edit_label", &fl!("novel-edit-label"));
         builder.label_i18n("novel_action_delete_label", &fl!("novel-delete-label"));
@@ -111,28 +90,16 @@ impl NovelDialog {
         builder.label_i18n("novel_status_edit_label", &(fl!("status") + ":"));
         builder.label_i18n("novel_volumes_edit_label", &(fl!("volumes") + ":"));
         builder.label_i18n("novel_chapters_edit_label", &(fl!("chapters") + ":"));
-        builder.label_i18n(
-            "novel_side_stories_edit_label",
-            &(fl!("side-stories") + ":"),
-        );
+        builder.label_i18n("novel_side_stories_edit_label", &(fl!("side-stories") + ":"));
         builder.label_i18n("novel_alt_title_edit_label", &fl!("novel-alt-title"));
         builder.label_i18n("novel_details_edit_label", &fl!("novel-details"));
-        builder.label_i18n(
-            "novel_additional_details_edit_label",
-            &fl!("novel-additional-details"),
-        );
+        builder.label_i18n("novel_additional_details_edit_label", &fl!("novel-additional-details"));
         builder.label_i18n(
             "novel_detail_country_edit_label",
             &(fl!("novel-original-language") + ":"),
         );
-        builder.label_i18n(
-            "novel_detail_author_edit_label",
-            &(fl!("novel-author") + ":"),
-        );
-        builder.label_i18n(
-            "novel_detail_artist_edit_label",
-            &(fl!("novel-artist") + ":"),
-        );
+        builder.label_i18n("novel_detail_author_edit_label", &(fl!("novel-author") + ":"));
+        builder.label_i18n("novel_detail_artist_edit_label", &(fl!("novel-artist") + ":"));
         builder.label_i18n("novel_detail_type_edit_label", &(fl!("novel-type") + ":"));
         builder.label_i18n("novel_detail_year_edit_label", &(fl!("year") + ":"));
         builder.label_i18n("novel_detail_genre_edit_label", &(fl!("novel-genre") + ":"));
@@ -155,8 +122,7 @@ impl NovelDialog {
         let info_notebook = builder.get::<gtk::Notebook>("novel_info_notebook");
         let edit_notebook = builder.get::<gtk::Notebook>("novel_edit_notebook");
         let list_status_comboboxtext = builder.get::<gtk::ComboBoxText>("list_status_comboboxtext");
-        let novel_status_comboboxtext =
-            builder.get::<gtk::ComboBoxText>("novel_setting_status_edit");
+        let novel_status_comboboxtext = builder.get::<gtk::ComboBoxText>("novel_setting_status_edit");
         let novel_type_combobox = builder.get::<gtk::ComboBoxText>("novel_detail_type_edit");
         let ok_button = builder.get::<gtk::Button>("novel_btn_ok");
         let reading_url_entry = builder.get::<gtk::Entry>("setting_url_entry");
@@ -292,21 +258,22 @@ impl NovelDialog {
 
             match response_type {
                 gtk::ResponseType::Ok => {
-                    // Save any changes
-                    app_runtime.update_state_with(move |state| {
-                        state.edit_novel_settings(novel_settings);
-                    });
-
                     // Check if the edit page is open
                     // if then just switch back to the
                     // non-edit page.
                     if is_edit_page_open {
                         app_runtime.update_state_with(move |state| {
+                            // Save any novel edits
                             state.edit_active_novel();
                         });
                         notebook.set_page(0);
                         return;
                     }
+
+                    // Save any changes
+                    app_runtime.update_state_with(move |state| {
+                        state.edit_novel_settings(novel_settings);
+                    });
 
                     dialog.hide();
                 },
@@ -386,14 +353,11 @@ impl NovelDialog {
         let image = builder.get::<gtk::Image>("novel_image");
         let novel_alt_title_text = builder.get::<gtk::TextView>("novel_alt_title_text");
 
-        let novel_detail_author_value =
-            builder.get::<gtk::Label>("novel_detail_author_value_label");
-        let novel_detail_artist_value =
-            builder.get::<gtk::Label>("novel_detail_artist_value_label");
+        let novel_detail_author_value = builder.get::<gtk::Label>("novel_detail_author_value_label");
+        let novel_detail_artist_value = builder.get::<gtk::Label>("novel_detail_artist_value_label");
         let novel_detail_type_value = builder.get::<gtk::Label>("novel_detail_type_value_label");
         let novel_detail_genre_value = builder.get::<gtk::Label>("novel_detail_genre_value_label");
-        let novel_detail_country_value =
-            builder.get::<gtk::Label>("novel_detail_country_value_label");
+        let novel_detail_country_value = builder.get::<gtk::Label>("novel_detail_country_value_label");
         let novel_tags_text = builder.get::<gtk::TextView>("novel_tags_text");
         let novel_description_text = builder.get::<gtk::TextView>("novel_description_text");
         let novel_source_slug_label = builder.get::<gtk::Label>("novel_source_slug_label");
@@ -449,8 +413,7 @@ impl NovelDialog {
             let full_path = &data_dir(image_path);
             // If the image exists then try to render it
             if full_path.exists() {
-                let pb = Pixbuf::from_file_at_scale(full_path, 150, 215, false)
-                    .expect("Cannot get Pixbuf");
+                let pb = Pixbuf::from_file_at_scale(full_path, 150, 215, false).expect("Cannot get Pixbuf");
 
                 image.set_from_pixbuf(Some(&pb));
             }
@@ -464,10 +427,7 @@ impl NovelDialog {
                 .set_text(&nil_str(&alt_title.join("\n")));
         } else {
             novel_alt_title_text.set_height_request(18);
-            novel_alt_title_text
-                .buffer()
-                .expect("Cannot get buffer")
-                .set_text("-");
+            novel_alt_title_text.buffer().expect("Cannot get buffer").set_text("-");
         }
 
         if novel.content.side_stories > 0 {
@@ -543,15 +503,9 @@ impl NovelDialog {
         }
 
         if let Some(notes) = &novel.settings.notes {
-            notes_textview
-                .buffer()
-                .expect("Could not get buffer")
-                .set_text(notes);
+            notes_textview.buffer().expect("Could not get buffer").set_text(notes);
         } else {
-            notes_textview
-                .buffer()
-                .expect("Could not get buffer")
-                .set_text("");
+            notes_textview.buffer().expect("Could not get buffer").set_text("");
         }
 
         if let Some(file) = &novel.settings.file {
@@ -603,16 +557,13 @@ impl NovelDialog {
         let novel_detail_author_edit = builder.get::<gtk::Entry>("novel_detail_author_edit");
         let novel_detail_artist_edit = builder.get::<gtk::Entry>("novel_detail_artist_edit");
         let novel_detail_genre_edit = builder.get::<gtk::Entry>("novel_detail_genre_edit");
-        let novel_detail_original_publisher_edit =
-            builder.get::<gtk::Entry>("novel_detail_original_publisher_edit");
-        let novel_detail_english_publisher_edit =
-            builder.get::<gtk::Entry>("novel_detail_english_publisher_edit");
+        let novel_detail_original_publisher_edit = builder.get::<gtk::Entry>("novel_detail_original_publisher_edit");
+        let novel_detail_english_publisher_edit = builder.get::<gtk::Entry>("novel_detail_english_publisher_edit");
         let novel_tags_edit = builder.get::<gtk::TextView>("novel_tags_edit");
         let novel_description_edit = builder.get::<gtk::TextView>("novel_description_edit");
         let novel_slug_edit = builder.get::<gtk::Entry>("novel_slug_edit");
 
-        let novel_setting_side_stories_edit =
-            builder.get::<gtk::Entry>("novel_setting_side_stories_edit");
+        let novel_setting_side_stories_edit = builder.get::<gtk::Entry>("novel_setting_side_stories_edit");
         let novel_setting_chapters_edit = builder.get::<gtk::Entry>("novel_setting_chapters_edit");
         let novel_setting_volumes_edit = builder.get::<gtk::Entry>("novel_setting_volumes_edit");
         let novel_setting_year_edit = builder.get::<gtk::Entry>("novel_setting_year_edit");
@@ -641,9 +592,8 @@ impl NovelDialog {
             let working_image_path = data_dir(image_path);
             // If the image exists then try to render it
             if Path::new(&working_image_path).exists() {
-                let pb =
-                    Pixbuf::from_file_at_scale(Path::new(&working_image_path), 150, 215, false)
-                        .expect("Cannot get Pixbuf");
+                let pb = Pixbuf::from_file_at_scale(Path::new(&working_image_path), 150, 215, false)
+                    .expect("Cannot get Pixbuf");
 
                 image.set_from_pixbuf(Some(&pb));
             }
@@ -701,27 +651,20 @@ impl NovelDialog {
         let novel_detail_author_edit = builder.get::<gtk::Entry>("novel_detail_author_edit");
         let novel_detail_artist_edit = builder.get::<gtk::Entry>("novel_detail_artist_edit");
         let novel_detail_genre_edit = builder.get::<gtk::Entry>("novel_detail_genre_edit");
-        let novel_detail_original_publisher_edit =
-            builder.get::<gtk::Entry>("novel_detail_original_publisher_edit");
-        let novel_detail_english_publisher_edit =
-            builder.get::<gtk::Entry>("novel_detail_english_publisher_edit");
+        let novel_detail_original_publisher_edit = builder.get::<gtk::Entry>("novel_detail_original_publisher_edit");
+        let novel_detail_english_publisher_edit = builder.get::<gtk::Entry>("novel_detail_english_publisher_edit");
         let novel_tags_edit = builder.get::<gtk::TextView>("novel_tags_edit");
         let novel_description_edit = builder.get::<gtk::TextView>("novel_description_edit");
         let novel_slug_edit = builder.get::<gtk::Entry>("novel_slug_edit");
 
-        let novel_setting_side_stories_edit =
-            builder.get::<gtk::Entry>("novel_setting_side_stories_edit");
+        let novel_setting_side_stories_edit = builder.get::<gtk::Entry>("novel_setting_side_stories_edit");
         let novel_setting_chapters_edit = builder.get::<gtk::Entry>("novel_setting_chapters_edit");
         let novel_setting_volumes_edit = builder.get::<gtk::Entry>("novel_setting_volumes_edit");
         let novel_setting_year_edit = builder.get::<gtk::Entry>("novel_setting_year_edit");
 
         let alt_titles_buffer = novel_alt_title_edit.buffer().expect("Cannot get buffer");
         let alt_titles = alt_titles_buffer
-            .text(
-                &alt_titles_buffer.start_iter(),
-                &alt_titles_buffer.end_iter(),
-                false,
-            )
+            .text(&alt_titles_buffer.start_iter(), &alt_titles_buffer.end_iter(), false)
             .unwrap()
             .to_string()
             .split(',')
@@ -729,11 +672,7 @@ impl NovelDialog {
             .map(str::to_string)
             .collect::<Vec<String>>();
 
-        let alternative_titles = if !alt_titles.is_empty() {
-            Some(alt_titles)
-        } else {
-            None
-        };
+        let alternative_titles = if !alt_titles.is_empty() { Some(alt_titles) } else { None };
 
         let authors = novel_detail_author_edit
             .text()
@@ -793,11 +732,7 @@ impl NovelDialog {
 
         let description_buffer = novel_description_edit.buffer().expect("Cannot get buffer");
         let description = description_buffer
-            .text(
-                &description_buffer.start_iter(),
-                &description_buffer.end_iter(),
-                false,
-            )
+            .text(&description_buffer.start_iter(), &description_buffer.end_iter(), false)
             .and_then(|v| v.parse().ok())
             .filter(|s: &String| !s.is_empty());
 
@@ -832,11 +767,7 @@ impl NovelDialog {
             ),
             genre: genres,
             tags,
-            year: novel_setting_year_edit
-                .text()
-                .to_string()
-                .parse::<i32>()
-                .unwrap(),
+            year: novel_setting_year_edit.text().to_string().parse::<i32>().unwrap(),
             description,
             source,
             original_language: novel_detail_country_edit.text().to_string(),

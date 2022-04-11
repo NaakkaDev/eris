@@ -34,10 +34,7 @@ impl ParseNovel for ScribbleHub {
             .map(|node| node.text())
             .collect::<Vec<String>>();
 
-        let status_strs = status_strings
-            .iter()
-            .map(|s| s.as_str())
-            .collect::<Vec<&str>>();
+        let status_strs = status_strings.iter().map(|s| s.as_str()).collect::<Vec<&str>>();
 
         let novel = Novel {
             id: novel_id,
@@ -67,11 +64,7 @@ impl ParseNovel for ScribbleHub {
     }
 
     fn parse_title(&self) -> String {
-        self.document
-            .select(Class("fic_title"))
-            .next()
-            .unwrap()
-            .text()
+        self.document.select(Class("fic_title")).next().unwrap().text()
     }
 
     fn parse_image(&self, novel_id: &str) -> Vec<String> {
@@ -111,12 +104,7 @@ impl ParseNovel for ScribbleHub {
     }
 
     fn parse_author(&self) -> Vec<String> {
-        let author = self
-            .document
-            .select(Class("auth_name_fic"))
-            .next()
-            .unwrap()
-            .text();
+        let author = self.document.select(Class("auth_name_fic")).next().unwrap().text();
 
         vec![author]
     }

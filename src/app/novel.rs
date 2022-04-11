@@ -524,8 +524,7 @@ impl NovelSettings {
 
         if let Some(idx) = index {
             let chapter_segment = segments[idx];
-            let mut chapter_items: Vec<String> =
-                chapter_segment.split('-').map(str::to_string).collect();
+            let mut chapter_items: Vec<String> = chapter_segment.split('-').map(str::to_string).collect();
 
             // Update the chapter number
             chapter_items.truncate(chapter_items.len() - 1);
@@ -574,10 +573,7 @@ pub struct ReadAmount {
 
 impl ReadAmount {
     pub fn new(available: f64) -> Self {
-        ReadAmount {
-            read: 0.0,
-            available,
-        }
+        ReadAmount { read: 0.0, available }
     }
 }
 

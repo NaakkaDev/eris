@@ -9,8 +9,7 @@ use gtk::prelude::*;
 impl UI {
     pub fn about_dialog(&self) {
         let resource = Resources::get("icons/eris_logo.png").unwrap().data;
-        let icon_pix =
-            Pixbuf::from_read(Cursor::new(resource)).expect("Cannot load pixbuf from resource.");
+        let icon_pix = Pixbuf::from_read(Cursor::new(resource)).expect("Cannot load pixbuf from resource.");
 
         let dialog = cascade! {
             gtk::AboutDialog::new();

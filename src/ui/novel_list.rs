@@ -358,12 +358,7 @@ impl NovelList {
     }
 
     /// This is ran only once on app startup.
-    pub fn connect(
-        &mut self,
-        builder: &gtk::Builder,
-        app_runtime: AppRuntime,
-        settings: &Settings,
-    ) {
+    pub fn connect(&mut self, builder: &gtk::Builder, app_runtime: AppRuntime, settings: &Settings) {
         // Set correct sorting for each list
         self.lists.reading.set_sort_column_id(
             SortColumn::Index(settings.list.list_sort_order[0].column_id),
@@ -398,54 +393,48 @@ impl NovelList {
             };
 
             // What happens when list row is activated
-            treeview.connect_row_activated(glib::clone!(@strong app_runtime, @strong i, @strong list => move |tree, path, _col| {
-                action_open_novel_dialog(&app_runtime, tree, path, i, false);
-            }));
+            treeview.connect_row_activated(
+                glib::clone!(@strong app_runtime, @strong i, @strong list => move |tree, path, _col| {
+                    action_open_novel_dialog(&app_runtime, tree, path, i, false);
+                }),
+            );
 
             // ===============================
             // Drag and drop individual novels from one list to another,
             // supports dragging only one item at the time.
             //
-            let targets = vec![gtk::TargetEntry::new(
-                "UTF8_STRING",
-                gtk::TargetFlags::SAME_APP,
-                0,
-            )];
+            let targets = vec![gtk::TargetEntry::new("UTF8_STRING", gtk::TargetFlags::SAME_APP, 0)];
 
             treeview.drag_source_set(ModifierType::MODIFIER_MASK, &targets, DragAction::MOVE);
-            treeview.connect_drag_data_get(
-                glib::clone!(@strong app_runtime => move |tree, _, selection, _, _| {
-                    let model = tree.model().unwrap();
-                    let (path, _) = tree.cursor();
-                    let iter = model.iter(&path.unwrap()).unwrap();
-                    let novel_id = model.value(&iter, ID_COLUMN).get::<String>().unwrap();
-                    selection.set_text(&novel_id);
+            treeview.connect_drag_data_get(glib::clone!(@strong app_runtime => move |tree, _, selection, _, _| {
+                let model = tree.model().unwrap();
+                let (path, _) = tree.cursor();
+                let iter = model.iter(&path.unwrap()).unwrap();
+                let novel_id = model.value(&iter, ID_COLUMN).get::<String>().unwrap();
+                selection.set_text(&novel_id);
 
-                    app_runtime.update_state_with(move |state| {
-                        let novel = state.get_by_id(novel_id).unwrap();
-                        state.ui.lists.active_list = novel.settings.list_status;
-                        state.ui.lists.active_iter = Some(iter);
-                    });
-                }),
-            );
+                app_runtime.update_state_with(move |state| {
+                    let novel = state.get_by_id(novel_id).unwrap();
+                    state.ui.lists.active_list = novel.settings.list_status;
+                    state.ui.lists.active_iter = Some(iter);
+                });
+            }));
 
             let tab = builder.get::<gtk::Label>(&format!("NotebookLabel{}", i + 1));
             tab.drag_dest_set(DestDefaults::ALL, &targets, DragAction::MOVE);
-            tab.connect_drag_data_received(
-                glib::clone!(@strong app_runtime => move |tab, _, _, _, data, _, _| {
-                    if let Some(novel_id) = data.text() {
-                        let to_list = ListStatus::from_name(tab.widget_name().as_str());
-                        app_runtime.update_state_with(move |state| {
-                            // Do nothing if moving to the same list
-                            if state.ui.lists.active_list == to_list {
-                                return;
-                            }
+            tab.connect_drag_data_received(glib::clone!(@strong app_runtime => move |tab, _, _, _, data, _, _| {
+                if let Some(novel_id) = data.text() {
+                    let to_list = ListStatus::from_name(tab.widget_name().as_str());
+                    app_runtime.update_state_with(move |state| {
+                        // Do nothing if moving to the same list
+                        if state.ui.lists.active_list == to_list {
+                            return;
+                        }
 
-                            state.move_novel(novel_id.to_string(), to_list)
-                        });
-                    }
-                }),
-            );
+                        state.move_novel(novel_id.to_string(), to_list)
+                    });
+                }
+            }));
             // Drag and drop end
             // ===============================
         }
@@ -472,11 +461,13 @@ impl NovelList {
                 ListStatus::Dropped => &self.lists.dropped,
             };
 
-            let handler = treeview.connect_button_press_event(glib::clone!(@strong app_runtime, @strong settings, @strong i, @strong list => move |tree, event| {
-                set_list_actions(&app_runtime, event, &settings, tree, i);
+            let handler = treeview.connect_button_press_event(
+                glib::clone!(@strong app_runtime, @strong settings, @strong i, @strong list => move |tree, event| {
+                    set_list_actions(&app_runtime, event, &settings, tree, i);
 
-                gtk::Inhibit(false)
-            }));
+                    gtk::Inhibit(false)
+                }),
+            );
 
             // Add the handler into the hashmap with the treeview id
             // so it can be disconnected later if needed.
@@ -516,10 +507,7 @@ impl NovelList {
                     let cell = column.cells().get(0).unwrap().to_owned();
 
                     let iter = model.iter(&path).unwrap();
-                    let novel_status = model
-                        .value(&iter, Column::Status as i32)
-                        .get::<String>()
-                        .unwrap();
+                    let novel_status = model.value(&iter, Column::Status as i32).get::<String>().unwrap();
 
                     tooltip.set_text(Some(&novel_status));
                     tree.set_tooltip_cell(tooltip, None, Some(&column), Some(&cell));
@@ -563,42 +551,21 @@ impl NovelList {
                     Column::SideStoriesRead as u32,
                     &novel.settings.content_read.side_stories,
                 ),
-                (
-                    Column::VolumesRead as u32,
-                    &novel.settings.content_read.volumes,
-                ),
+                (Column::VolumesRead as u32, &novel.settings.content_read.volumes),
                 (Column::ChaptersAvailable as u32, &novel.content()),
                 (Column::Score as u32, &novel.settings.score),
-                (
-                    Column::LastUpdate as u32,
-                    &novel.settings.last_updated_string(),
-                ),
+                (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
             ];
 
             self.counts[novel.settings.list_status.to_i32() as usize] =
                 self.counts[novel.settings.list_status.to_i32() as usize] + 1;
 
             match &novel.settings.list_status {
-                ListStatus::Reading => self
-                    .lists
-                    .reading
-                    .set(&self.lists.reading.append(), &values),
-                ListStatus::PlanToRead => self
-                    .lists
-                    .plan_to_read
-                    .set(&self.lists.plan_to_read.append(), &values),
-                ListStatus::OnHold => self
-                    .lists
-                    .on_hold
-                    .set(&self.lists.on_hold.append(), &values),
-                ListStatus::Completed => self
-                    .lists
-                    .completed
-                    .set(&self.lists.completed.append(), &values),
-                ListStatus::Dropped => self
-                    .lists
-                    .dropped
-                    .set(&self.lists.dropped.append(), &values),
+                ListStatus::Reading => self.lists.reading.set(&self.lists.reading.append(), &values),
+                ListStatus::PlanToRead => self.lists.plan_to_read.set(&self.lists.plan_to_read.append(), &values),
+                ListStatus::OnHold => self.lists.on_hold.set(&self.lists.on_hold.append(), &values),
+                ListStatus::Completed => self.lists.completed.set(&self.lists.completed.append(), &values),
+                ListStatus::Dropped => self.lists.dropped.set(&self.lists.dropped.append(), &values),
             }
         }
 
@@ -646,16 +613,10 @@ impl NovelList {
                 Column::SideStoriesRead as u32,
                 &novel.settings.content_read.side_stories,
             ),
-            (
-                Column::VolumesRead as u32,
-                &novel.settings.content_read.volumes,
-            ),
+            (Column::VolumesRead as u32, &novel.settings.content_read.volumes),
             (Column::ChaptersAvailable as u32, &novel.content()),
             (Column::Score as u32, &novel.settings.score),
-            (
-                Column::LastUpdate as u32,
-                &novel.settings.last_updated_string(),
-            ),
+            (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
         ];
 
         self.counts[novel.settings.list_status.to_i32() as usize] =
@@ -665,11 +626,8 @@ impl NovelList {
         match &novel.settings.list_status {
             ListStatus::Reading => {
                 self.lists.reading.insert_with_values(Some(0), &values);
-                self.label_reading.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::Reading.to_string(),
-                    self.counts[0]
-                ));
+                self.label_reading
+                    .set_text(&format!("{} ({})", ListStatus::Reading.to_string(), self.counts[0]));
             }
             ListStatus::PlanToRead => {
                 self.lists.plan_to_read.insert_with_values(Some(0), &values);
@@ -681,29 +639,22 @@ impl NovelList {
             }
             ListStatus::OnHold => {
                 self.lists.on_hold.insert_with_values(Some(0), &values);
-                self.label_on_hold.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::OnHold.to_string(),
-                    self.counts[2]
-                ));
+                self.label_on_hold
+                    .set_text(&format!("{} ({})", ListStatus::OnHold.to_string(), self.counts[2]));
             }
             ListStatus::Completed => {
                 self.lists.completed.insert_with_values(Some(0), &values);
-                self.label_completed.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::Completed.to_string(),
-                    self.counts[3]
-                ));
+                self.label_completed
+                    .set_text(&format!("{} ({})", ListStatus::Completed.to_string(), self.counts[3]));
             }
             ListStatus::Dropped => {
                 self.lists.dropped.insert_with_values(Some(0), &values);
-                self.label_dropped.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::Dropped.to_string(),
-                    self.counts[4]
-                ));
+                self.label_dropped
+                    .set_text(&format!("{} ({})", ListStatus::Dropped.to_string(), self.counts[4]));
             }
         }
+
+        self.scroll_to_top(novel.settings.list_status);
     }
 
     pub fn list_remove(&mut self, novel: &Novel, old_iter: Option<gtk::TreeIter>) {
@@ -728,11 +679,8 @@ impl NovelList {
         // Update the novel the tab label count
         match list_status {
             ListStatus::Reading => {
-                self.label_reading.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::Reading.to_string(),
-                    self.counts[0]
-                ));
+                self.label_reading
+                    .set_text(&format!("{} ({})", ListStatus::Reading.to_string(), self.counts[0]));
             }
             ListStatus::PlanToRead => {
                 self.label_plan_to_read.set_text(&format!(
@@ -742,25 +690,16 @@ impl NovelList {
                 ));
             }
             ListStatus::OnHold => {
-                self.label_on_hold.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::OnHold.to_string(),
-                    self.counts[2]
-                ));
+                self.label_on_hold
+                    .set_text(&format!("{} ({})", ListStatus::OnHold.to_string(), self.counts[2]));
             }
             ListStatus::Completed => {
-                self.label_completed.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::Completed.to_string(),
-                    self.counts[3]
-                ));
+                self.label_completed
+                    .set_text(&format!("{} ({})", ListStatus::Completed.to_string(), self.counts[3]));
             }
             ListStatus::Dropped => {
-                self.label_dropped.set_text(&format!(
-                    "{} ({})",
-                    ListStatus::Dropped.to_string(),
-                    self.counts[4]
-                ));
+                self.label_dropped
+                    .set_text(&format!("{} ({})", ListStatus::Dropped.to_string(), self.counts[4]));
             }
         }
 
@@ -769,14 +708,13 @@ impl NovelList {
         } else if let Some(iter) = self.find_iter(novel) {
             iter
         } else {
-            error!(
-                "Cannot remove novel {} from list, iter not found.",
-                novel.id
-            );
+            error!("Cannot remove novel {} from list, iter not found.", novel.id);
             return;
         };
 
         list.remove(&iter);
+
+        self.scroll_to_top(list_status);
     }
 
     /// Move novel from list A to list B
@@ -802,27 +740,11 @@ impl NovelList {
             };
 
             // Updated the columns on the selected row
-            list.set_value(
-                iter,
-                Column::Status as u32,
-                &novel.status.to_str().to_value(),
-            );
-            list.set_value(
-                iter,
-                Column::StatusIcon as u32,
-                &novel.status_pix().to_value(),
-            );
-            list.set_value(
-                iter,
-                Column::OriginalLanguage as u32,
-                &novel.orig_lang().to_value(),
-            );
+            list.set_value(iter, Column::Status as u32, &novel.status.to_str().to_value());
+            list.set_value(iter, Column::StatusIcon as u32, &novel.status_pix().to_value());
+            list.set_value(iter, Column::OriginalLanguage as u32, &novel.orig_lang().to_value());
             list.set_value(iter, Column::Title as u32, &novel.title().to_value());
-            list.set_value(
-                iter,
-                Column::ChaptersRead as u32,
-                &novel.chapters_read_str().to_value(),
-            );
+            list.set_value(iter, Column::ChaptersRead as u32, &novel.chapters_read_str().to_value());
             list.set_value(
                 iter,
                 Column::SideStoriesRead as u32,
@@ -833,11 +755,7 @@ impl NovelList {
                 Column::VolumesRead as u32,
                 &novel.settings.content_read.volumes.to_value(),
             );
-            list.set_value(
-                iter,
-                Column::ChaptersAvailable as u32,
-                &novel.content().to_value(),
-            );
+            list.set_value(iter, Column::ChaptersAvailable as u32, &novel.content().to_value());
             list.set_value(iter, Column::Score as u32, &novel.settings.score.to_value());
             list.set_value(
                 iter,
@@ -845,14 +763,13 @@ impl NovelList {
                 &novel.settings.last_updated_string().to_value(),
             );
         }
+
+        self.scroll_to_top(novel.settings.list_status);
     }
 
+    /// Find correct `gtk::TreeIter` for the novel.
     pub fn find_iter(&self, novel: &Novel) -> Option<gtk::TreeIter> {
-        let model = self
-            .trees
-            .index(novel.settings.list_status.to_i32())
-            .model()
-            .unwrap();
+        let model = self.trees.index(novel.settings.list_status.to_i32()).model().unwrap();
 
         for i in 0..(model.iter_n_children(None)) {
             // Check if this is the correct iter
@@ -869,9 +786,12 @@ impl NovelList {
         None
     }
 
-    /// Does what is says, sometimes.
+    /// Does what is says.
     pub fn scroll_to_top(&self, list: ListStatus) {
-        self.trees[list.to_i32()].scroll_to_point(0, 2);
+        // First move to scrollbar down a bit, because wonky
+        self.trees[list.to_i32()].vadjustment().unwrap().set_value(35.0);
+        // then move it to top
+        self.trees[list.to_i32()].vadjustment().unwrap().set_value(0.1);
     }
 }
 
@@ -913,19 +833,9 @@ fn list_actions(
 
 /// Sort function for novel lists which sorts the `Column::LastUpdate` column by turning
 /// the datetime string into a timemstamp and then comparing the values.
-pub fn list_sort_datetime(
-    model: &gtk::TreeModel,
-    a_iter: &gtk::TreeIter,
-    b_iter: &gtk::TreeIter,
-) -> Ordering {
-    let date_a = model
-        .value(a_iter, Column::LastUpdate as i32)
-        .get::<String>()
-        .unwrap();
-    let date_b = model
-        .value(b_iter, Column::LastUpdate as i32)
-        .get::<String>()
-        .unwrap();
+pub fn list_sort_datetime(model: &gtk::TreeModel, a_iter: &gtk::TreeIter, b_iter: &gtk::TreeIter) -> Ordering {
+    let date_a = model.value(a_iter, Column::LastUpdate as i32).get::<String>().unwrap();
+    let date_b = model.value(b_iter, Column::LastUpdate as i32).get::<String>().unwrap();
 
     let dt_a = NaiveDateTime::parse_from_str(&date_a, "%d %B %Y, %H:%M:%S").unwrap();
     let dt_b = NaiveDateTime::parse_from_str(&date_b, "%d %B %Y, %H:%M:%S").unwrap();
@@ -986,12 +896,7 @@ pub fn action_read_novel(app_runtime: &AppRuntime, tree: &TreeView) {
     });
 }
 
-pub fn action_open_menu(
-    app_runtime: &AppRuntime,
-    tree: &TreeView,
-    treeview_index: i32,
-    event: &gdk::EventButton,
-) {
+pub fn action_open_menu(app_runtime: &AppRuntime, tree: &TreeView, treeview_index: i32, event: &gdk::EventButton) {
     let model = tree.model().unwrap();
     let (path, _) = tree.cursor();
     if path.is_none() {
@@ -1002,42 +907,40 @@ pub fn action_open_menu(
     let menu = gtk::Menu::new();
     let menuitem_open = gtk::MenuItem::new();
     menuitem_open.set_label(&fl!("menu-open-edit"));
-    menuitem_open.connect_activate(glib::clone!(@strong app_runtime, @strong novel_id, @strong treeview_index, @strong iter => move |_| {
-        let iter = iter.clone();
+    menuitem_open.connect_activate(
+        glib::clone!(@strong app_runtime, @strong novel_id, @strong treeview_index, @strong iter => move |_| {
+            let iter = iter;
+            let novel_id = novel_id.clone();
+            app_runtime.update_state_with(move |mut state| {
+                if let Some(novel) = state.get_by_id(novel_id) {
+                    state.ui.lists.active_list = ListStatus::from_i32(treeview_index);
+                    state.ui.lists.active_iter = Some(iter);
+                    state.ui.lists.active_novel = Some(novel.clone());
+                    state.ui.show_novel_dialog(&novel, &state.settings.read());
+                }
+            });
+        }),
+    );
+    let menuitem_read = gtk::MenuItem::new();
+    menuitem_read.set_label(&fl!("action-read-next"));
+    menuitem_read.connect_activate(glib::clone!(@strong app_runtime, @strong novel_id => move |_| {
         let novel_id = novel_id.clone();
-        app_runtime.update_state_with(move |mut state| {
+        app_runtime.update_state_with(move |state| {
             if let Some(novel) = state.get_by_id(novel_id) {
-                state.ui.lists.active_list = ListStatus::from_i32(treeview_index);
-                state.ui.lists.active_iter = Some(iter);
-                state.ui.lists.active_novel = Some(novel.clone());
-                state.ui.show_novel_dialog(&novel, &state.settings.read());
+                state.read_novel(novel);
             }
         });
     }));
-    let menuitem_read = gtk::MenuItem::new();
-    menuitem_read.set_label(&fl!("action-read-next"));
-    menuitem_read.connect_activate(
-        glib::clone!(@strong app_runtime, @strong novel_id => move |_| {
-            let novel_id = novel_id.clone();
-            app_runtime.update_state_with(move |state| {
-                if let Some(novel) = state.get_by_id(novel_id) {
-                    state.read_novel(novel);
-                }
-            });
-        }),
-    );
     let menuitem_slug = gtk::MenuItem::new();
     menuitem_slug.set_label(&fl!("menu-open-webpage"));
-    menuitem_slug.connect_activate(
-        glib::clone!(@strong app_runtime, @strong novel_id => move |_| {
-            let novel_id = novel_id.clone();
-            app_runtime.update_state_with(move |state| {
-                if let Some(novel) = state.get_by_id(novel_id) {
-                    novel.open_slug();
-                }
-            });
-        }),
-    );
+    menuitem_slug.connect_activate(glib::clone!(@strong app_runtime, @strong novel_id => move |_| {
+        let novel_id = novel_id.clone();
+        app_runtime.update_state_with(move |state| {
+            if let Some(novel) = state.get_by_id(novel_id) {
+                novel.open_slug();
+            }
+        });
+    }));
 
     menu.set_attach_widget(Some(tree));
     menu.add(&menuitem_open);
@@ -1100,8 +1003,7 @@ pub fn action_open_novel_dialog(
             // Use different values when opening the novel dialog from
             // the history treeview
             if treeview_index == 99 {
-                state.ui.lists.active_list =
-                    ListStatus::from_i32(novel.settings.list_status.to_i32());
+                state.ui.lists.active_list = ListStatus::from_i32(novel.settings.list_status.to_i32());
                 state.ui.lists.active_iter = state.ui.lists.find_iter(&novel);
             } else {
                 state.ui.lists.active_list = ListStatus::from_i32(treeview_index);
@@ -1122,12 +1024,7 @@ pub fn action_open_novel_dialog(
 /// Messily add columns
 ///
 /// Code order decides the order of columns (for some reason)
-pub fn add_columns(
-    list_index: i32,
-    tree: &gtk::TreeView,
-    app_runtime: AppRuntime,
-    settings: &Settings,
-) {
+pub fn add_columns(list_index: i32, tree: &gtk::TreeView, app_runtime: AppRuntime, settings: &Settings) {
     // Status column
     if settings.list.visible_columns[Column::Status as usize] {
         let renderer = gtk::CellRendererPixbuf::new();
@@ -1197,14 +1094,7 @@ pub fn add_columns(
                 });
             }),
         );
-        renderer.set_adjustment(Some(&Adjustment::new(
-            0.0,
-            0.0,
-            1_000_000.0,
-            1.0,
-            10.0,
-            0.0,
-        )));
+        renderer.set_adjustment(Some(&Adjustment::new(0.0, 0.0, 1_000_000.0, 1.0, 10.0, 0.0)));
         renderer.set_digits(1);
         renderer.set_climb_rate(1.0);
 
@@ -1425,9 +1315,7 @@ fn add_column(
 ) {
     let renderer = gtk::CellRendererText::new();
     renderer.set_padding(3, 1);
-    renderer
-        .set_property("ellipsize", gtk::pango::EllipsizeMode::End)
-        .expect("Cannot set ellipsize");
+    renderer.set_property("ellipsize", gtk::pango::EllipsizeMode::End);
     gtk::prelude::CellRendererExt::set_alignment(&renderer, x_align, 0.5);
 
     let min_width = 40;

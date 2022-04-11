@@ -50,10 +50,7 @@ impl WindowState {
 
     /// Returns `WindowState` with old size and position values
     /// if the current window is maximized.
-    pub fn from_window_with_old_values(
-        window: &gtk::ApplicationWindow,
-        old_state: Option<WindowState>,
-    ) -> WindowState {
+    pub fn from_window_with_old_values(window: &gtk::ApplicationWindow, old_state: Option<WindowState>) -> WindowState {
         if let Some(old_values) = old_state {
             let is_maximized = window.is_maximized();
             if is_maximized {

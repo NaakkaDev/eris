@@ -73,11 +73,7 @@ impl AppOp {
 
     pub fn export_history_to_json(&self, history: &NovelHistory) -> Result<()> {
         let json_data = serde_json::to_string(history)?;
-        let json_file_name = format!(
-            "data/history_v{}_{}.json",
-            HISTORY_VERSION,
-            Local::now().timestamp()
-        );
+        let json_file_name = format!("data/history_v{}_{}.json", HISTORY_VERSION, Local::now().timestamp());
 
         let file_result = File::create(&data_dir(&json_file_name)).context(ErisError::WriteToDisk);
         match file_result {
@@ -98,8 +94,7 @@ impl AppOp {
         let json_file = Path::new(&filename);
         if json_file.exists() {
             let json_data = fs::read_to_string(&json_file).expect("Unable to read JSON file.");
-            let history: NovelHistory =
-                serde_json::from_str(&json_data).expect("Unable to parse JSON.");
+            let history: NovelHistory = serde_json::from_str(&json_data).expect("Unable to parse JSON.");
 
             // Save to file
             match history.write_to_file() {
@@ -122,8 +117,10 @@ impl AppOp {
         match filename.split('_').into_iter().collect::<Vec<&str>>()[1] {
             "v1.0" => {
                 if filename.contains("history") {
+                    debug!("Importing history");
                     return self.import_json_to_history(file_path);
                 } else if filename.contains("db") {
+                    debug!("Importing db");
                     return self.import_json_to_db(file_path);
                 } else {
                     warn!("JSON file name not recognized.");

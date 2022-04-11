@@ -59,7 +59,7 @@ gdk-sys = "*"
 gio = { version = "*" }
 gio-sys = "*"
 glib = "*"
-gtk = { version = "0.14", features = ["v3_24"] }
+gtk = { version = "0.15", features = ["v3_24"] }
 
 # i18n
 once_cell = "1.8.0"

@@ -2,8 +2,8 @@ use crate::app::novel::Novel;
 use crate::app::settings::Settings;
 use crate::app::AppRuntime;
 use crate::ui::novel_list::{
-    action_open_novel_dialog, add_columns, list_sort_datetime, set_list_actions, Column,
-    COLUMN_COUNT, COLUMN_TYPES, ID_COLUMN,
+    action_open_novel_dialog, add_columns, list_sort_datetime, set_list_actions, Column, COLUMN_COUNT, COLUMN_TYPES,
+    ID_COLUMN,
 };
 use crate::utils::gtk::BuilderExtManualCustom;
 use gdk::cairo::glib::SignalHandlerId;
@@ -48,11 +48,10 @@ impl FilterList {
     }
 
     pub fn connect(&self, app_runtime: AppRuntime, list_notebook: &gtk::Notebook) {
-        self.treeview.connect_row_activated(
-            glib::clone!(@strong app_runtime => move |tree, path, _col| {
+        self.treeview
+            .connect_row_activated(glib::clone!(@strong app_runtime => move |tree, path, _col| {
                 action_open_novel_dialog(&app_runtime, tree, path, 5, false);
-            }),
-        );
+            }));
 
         // Set the filter model visibility function
         let filter_entry = self.entry.clone();
@@ -129,35 +128,30 @@ impl FilterList {
             return;
         }
 
-        let handler = self
-            .treeview
-            .connect_query_tooltip(|tree, _x, y, _keyboard, tooltip| {
-                let model = tree.model().unwrap();
-                let (path, _) = tree.cursor();
-                if let Some(path) = path {
-                    // If the mouse is past the rows then do not show the tooltip
-                    if y > (model.iter_n_children(None) * 19) + 26 {
-                        return false;
-                    }
-
-                    // -1 because logic.. guess it's the first element in the list of (visible) columns
-                    let column = tree.column(Column::Status as i32 - 1).unwrap();
-                    let cell = column.cells().get(0).unwrap().to_owned();
-
-                    let iter = model.iter(&path).unwrap();
-                    let novel_status = model
-                        .value(&iter, Column::Status as i32)
-                        .get::<String>()
-                        .unwrap();
-
-                    tooltip.set_text(Some(&novel_status));
-                    tree.set_tooltip_cell(tooltip, None, Some(&column), Some(&cell));
-
-                    return true;
+        let handler = self.treeview.connect_query_tooltip(|tree, _x, y, _keyboard, tooltip| {
+            let model = tree.model().unwrap();
+            let (path, _) = tree.cursor();
+            if let Some(path) = path {
+                // If the mouse is past the rows then do not show the tooltip
+                if y > (model.iter_n_children(None) * 19) + 26 {
+                    return false;
                 }
 
-                false
-            });
+                // -1 because logic.. guess it's the first element in the list of (visible) columns
+                let column = tree.column(Column::Status as i32 - 1).unwrap();
+                let cell = column.cells().get(0).unwrap().to_owned();
+
+                let iter = model.iter(&path).unwrap();
+                let novel_status = model.value(&iter, Column::Status as i32).get::<String>().unwrap();
+
+                tooltip.set_text(Some(&novel_status));
+                tree.set_tooltip_cell(tooltip, None, Some(&column), Some(&cell));
+
+                return true;
+            }
+
+            false
+        });
 
         self.tooltip_handler = Some(handler);
     }
@@ -181,10 +175,7 @@ impl FilterList {
                 (Column::StatusIcon as u32, &novel.status_pix()),
                 (Column::OriginalLanguage as u32, &novel.orig_lang()),
                 (Column::Title as u32, &novel.title()),
-                (
-                    Column::VolumesRead as u32,
-                    &novel.settings.content_read.volumes,
-                ),
+                (Column::VolumesRead as u32, &novel.settings.content_read.volumes),
                 (Column::ChaptersRead as u32, &novel.chapters_read_str()),
                 (
                     Column::SideStoriesRead as u32,
@@ -192,10 +183,7 @@ impl FilterList {
                 ),
                 (Column::ChaptersAvailable as u32, &novel.content()),
                 (Column::Score as u32, &novel.settings.score),
-                (
-                    Column::LastUpdate as u32,
-                    &novel.settings.last_updated_string(),
-                ),
+                (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
             ];
 
             self.list.set(&self.list.append(), &values);
@@ -209,10 +197,7 @@ impl FilterList {
             (Column::StatusIcon as u32, &novel.status_pix()),
             (Column::OriginalLanguage as u32, &novel.orig_lang()),
             (Column::Title as u32, &novel.title()),
-            (
-                Column::VolumesRead as u32,
-                &novel.settings.content_read.volumes,
-            ),
+            (Column::VolumesRead as u32, &novel.settings.content_read.volumes),
             (Column::ChaptersRead as u32, &novel.chapters_read_str()),
             (
                 Column::SideStoriesRead as u32,
@@ -220,10 +205,7 @@ impl FilterList {
             ),
             (Column::ChaptersAvailable as u32, &novel.content()),
             (Column::Score as u32, &novel.settings.score),
-            (
-                Column::LastUpdate as u32,
-                &novel.settings.last_updated_string(),
-            ),
+            (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
         ];
 
         self.list.insert_with_values(Some(0), &values);
@@ -234,43 +216,33 @@ impl FilterList {
         if let Some(iter) = &tree_iter {
             self.list.remove(iter);
         } else {
-            error!(
-                "Cannot remove novel {} from filter list, iter not found.",
-                novel.id
-            );
+            error!("Cannot remove novel {} from filter list, iter not found.", novel.id);
         }
     }
 
     pub fn list_update(&mut self, novel: &Novel) {
+        // Clear the filter entry when filter list gets updated
+        // without this the list will behave buggily (dupe rows) when editing
+        // novel information / settings
+        self.entry.set_text("");
+
         let tree_iter = self.find_iter(novel);
         if let Some(iter) = &tree_iter {
-            self.list.set_value(
-                iter,
-                Column::Status as u32,
-                &novel.status.to_str().to_value(),
-            );
-            self.list.set_value(
-                iter,
-                Column::StatusIcon as u32,
-                &novel.status_pix().to_value(),
-            );
+            self.list
+                .set_value(iter, Column::Status as u32, &novel.status.to_str().to_value());
+            self.list
+                .set_value(iter, Column::StatusIcon as u32, &novel.status_pix().to_value());
             self.list
                 .set_value(iter, Column::Title as u32, &novel.title().to_value());
-            self.list.set_value(
-                iter,
-                Column::ChaptersRead as u32,
-                &novel.chapters_read_str().to_value(),
-            );
+            self.list
+                .set_value(iter, Column::ChaptersRead as u32, &novel.chapters_read_str().to_value());
             self.list.set_value(
                 iter,
                 Column::VolumesRead as u32,
                 &novel.settings.content_read.volumes.to_value(),
             );
-            self.list.set_value(
-                iter,
-                Column::ChaptersAvailable as u32,
-                &novel.content().to_value(),
-            );
+            self.list
+                .set_value(iter, Column::ChaptersAvailable as u32, &novel.content().to_value());
             self.list.set_value(
                 iter,
                 Column::SideStoriesRead as u32,

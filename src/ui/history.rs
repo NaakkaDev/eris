@@ -40,13 +40,7 @@ pub struct HistoryList {
 
 impl HistoryList {
     pub fn new(builder: &gtk::Builder) -> HistoryList {
-        let list = gtk::ListStore::new(&[
-            Type::STRING,
-            Type::STRING,
-            Type::STRING,
-            Type::STRING,
-            Type::I64,
-        ]);
+        let list = gtk::ListStore::new(&[Type::STRING, Type::STRING, Type::STRING, Type::STRING, Type::I64]);
 
         let treeview = builder.get::<gtk::TreeView>("history_treeview");
         treeview.set_model(Some(&list));
@@ -55,10 +49,7 @@ impl HistoryList {
             gtk::SortColumn::Index(HistoryColumn::Time.to_u32()),
             gtk::SortType::Descending,
         );
-        list.set_sort_func(
-            SortColumn::Index(HistoryColumn::Time.to_u32()),
-            list_sort_datetime,
-        );
+        list.set_sort_func(SortColumn::Index(HistoryColumn::Time.to_u32()), list_sort_datetime);
 
         HistoryList {
             treeview,
@@ -69,19 +60,12 @@ impl HistoryList {
 
     pub fn connect(&self, builder: &gtk::Builder, app_runtime: AppRuntime) {
         let treeview = builder.get::<gtk::TreeView>("history_treeview");
-        treeview.connect_row_activated(
-            glib::clone!(@strong app_runtime => move |tree, path, _col| {
-                action_open_novel_dialog(&app_runtime, tree, path, 99, false);
-            }),
-        );
+        treeview.connect_row_activated(glib::clone!(@strong app_runtime => move |tree, path, _col| {
+            action_open_novel_dialog(&app_runtime, tree, path, 99, false);
+        }));
     }
 
-    pub fn connect_mouse_actions(
-        &mut self,
-        builder: &gtk::Builder,
-        app_runtime: AppRuntime,
-        settings: &Settings,
-    ) {
+    pub fn connect_mouse_actions(&mut self, builder: &gtk::Builder, app_runtime: AppRuntime, settings: &Settings) {
         let treeview = builder.get::<gtk::TreeView>("history_treeview");
         // If the handler exists then disconnect it and get rid of it
         if let Some(handler) = self.mouse_handler.take() {
@@ -132,9 +116,10 @@ impl HistoryList {
         self.scroll_to_top();
     }
 
-    /// Does what is says, sometimes.
+    /// Move scrollbar to top
     pub fn scroll_to_top(&self) {
-        self.treeview.scroll_to_point(0, 2);
+        self.treeview.vadjustment().unwrap().set_value(35.0);
+        self.treeview.vadjustment().unwrap().set_value(0.1);
     }
 }
 
@@ -193,11 +178,7 @@ pub fn add_history_columns(_model: &gtk::ListStore, treeview: &gtk::TreeView) {
 
 /// Sort function for history list which sorts the `HistoryColumn::Time` column
 /// based on hidden `HistoryColumn::Timestamp` data.
-fn list_sort_datetime(
-    model: &gtk::TreeModel,
-    a_iter: &gtk::TreeIter,
-    b_iter: &gtk::TreeIter,
-) -> Ordering {
+fn list_sort_datetime(model: &gtk::TreeModel, a_iter: &gtk::TreeIter, b_iter: &gtk::TreeIter) -> Ordering {
     let date_a = model
         .value(a_iter, HistoryColumn::Timestamp.to_i32())
         .get::<i64>()

@@ -58,14 +58,7 @@ impl NovelHistoryItem {
         list_status: Option<ListStatus>,
         named_chapter: Option<String>,
     ) -> Self {
-        NovelHistoryItem::new(
-            novel_id,
-            novel_name,
-            action,
-            content,
-            list_status,
-            named_chapter,
-        )
+        NovelHistoryItem::new(novel_id, novel_name, action, content, list_status, named_chapter)
     }
 
     /// Adds a new history record for when adding a new novel.
@@ -149,26 +142,13 @@ impl NovelHistoryItem {
                     }
                     if content.chapters > 0.0 {
                         if let Some(title) = &self.named_chapter {
-                            content_string.push_str(&format!(
-                                "{} {} - {} ",
-                                fl!("chapter"),
-                                content.chapters,
-                                title
-                            ));
+                            content_string.push_str(&format!("{} {} - {} ", fl!("chapter"), content.chapters, title));
                         } else {
-                            content_string.push_str(&format!(
-                                "{} {} ",
-                                fl!("chapter"),
-                                content.chapters
-                            ));
+                            content_string.push_str(&format!("{} {} ", fl!("chapter"), content.chapters));
                         }
                     }
                     if content.side_stories > 0 {
-                        content_string.push_str(&format!(
-                            "{} {} ",
-                            fl!("side-story"),
-                            content.side_stories
-                        ));
+                        content_string.push_str(&format!("{} {} ", fl!("side-story"), content.side_stories));
                     }
                     return content_string;
                 }
