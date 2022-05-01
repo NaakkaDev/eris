@@ -461,7 +461,7 @@
                           </packing>
                         </child>
                         <child>
-                          <!-- n-columns=3 n-rows=2 -->
+                          <!-- n-columns=3 n-rows=3 -->
                           <object class="GtkGrid">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
@@ -484,19 +484,6 @@
                               </object>
                               <packing>
                                 <property name="left-attach">1</property>
-                                <property name="top-attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="btn_continue_reading">
-                                <property name="label" translatable="yes">Continue reading</property>
-                                <property name="visible">True</property>
-                                <property name="sensitive">False</property>
-                                <property name="can-focus">True</property>
-                                <property name="receives-default">True</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">2</property>
                                 <property name="top-attach">0</property>
                               </packing>
                             </child>
@@ -529,6 +516,28 @@
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkButton" id="btn_continue_reading">
+                                <property name="label" translatable="yes">Continue reading</property>
+                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
                               <placeholder/>
                             </child>
                             <child>
@@ -540,9 +549,6 @@
                             <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
                         </child>
                       </object>
                     </child>
@@ -1180,28 +1186,9 @@
                                             <property name="can-focus">False</property>
                                             <property name="orientation">vertical</property>
                                             <child>
-                                              <object class="GtkLabel" id="reading_description_label">
-                                                <property name="visible">True</property>
-                                                <property name="can-focus">False</property>
-                                                <property name="label" translatable="yes">Description</property>
-                                                <property name="selectable">True</property>
-                                                <property name="xalign">0</property>
-                                                <style>
-                                                  <class name="detail-header"/>
-                                                </style>
-                                              </object>
-                                              <packing>
-                                                <property name="expand">False</property>
-                                                <property name="fill">True</property>
-                                                <property name="position">0</property>
-                                              </packing>
-                                            </child>
-                                            <child>
                                               <object class="GtkScrolledWindow">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">True</property>
-                                                <property name="margin-left">10</property>
-                                                <property name="margin-right">10</property>
                                                 <property name="margin-start">10</property>
                                                 <property name="margin-end">10</property>
                                                 <property name="margin-top">10</property>
@@ -1236,48 +1223,6 @@
                                                             <property name="position">0</property>
                                                           </packing>
                                                         </child>
-                                                        <child>
-                                                          <object class="GtkBox">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">False</property>
-                                                            <property name="margin-top">8</property>
-                                                            <child>
-                                                            <object class="GtkLabel" id="reading_source_label">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">False</property>
-                                                            <property name="label" translatable="yes">Source:</property>
-                                                            <property name="selectable">True</property>
-                                                            <property name="xalign">0</property>
-                                                            <property name="yalign">0</property>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="reading_novel_slug">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">False</property>
-                                                            <property name="margin-start">8</property>
-                                                            <property name="wrap">True</property>
-                                                            <property name="wrap-mode">char</property>
-                                                            <property name="xalign">0</property>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                            </packing>
-                                                            </child>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                          </packing>
-                                                        </child>
                                                       </object>
                                                     </child>
                                                   </object>
@@ -1285,6 +1230,65 @@
                                               </object>
                                               <packing>
                                                 <property name="expand">True</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkLabel" id="reading_description_label">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="label" translatable="yes">Description</property>
+                                                <property name="selectable">True</property>
+                                                <property name="xalign">0</property>
+                                                <style>
+                                                  <class name="detail-header"/>
+                                                </style>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkBox">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="margin-top">8</property>
+                                                <child>
+                                                  <object class="GtkLabel" id="reading_source_label">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">False</property>
+                                                    <property name="label" translatable="yes">Source:</property>
+                                                    <property name="selectable">True</property>
+                                                    <property name="xalign">0</property>
+                                                    <property name="yalign">0</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">0</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkLabel" id="reading_novel_slug">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">False</property>
+                                                    <property name="margin-start">8</property>
+                                                    <property name="wrap">True</property>
+                                                    <property name="wrap-mode">char</property>
+                                                    <property name="xalign">0</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">1</property>
+                                                  </packing>
+                                                </child>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
                                                 <property name="fill">True</property>
                                                 <property name="position">1</property>
                                               </packing>

@@ -3,6 +3,7 @@ plan-to-read = Plan to read
 on-hold = On hold
 completed = Completed
 dropped = Dropped
+abandoned = Abandoned
 ongoing = Ongoing
 hiatus = Hiatus
 original-completed = Original completed

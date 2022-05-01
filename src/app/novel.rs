@@ -28,7 +28,7 @@ pub enum NovelStatus {
     OriginalCompleted,
     Completed,
     Hiatus,
-    Dropped,
+    Abandoned,
     Other,
 }
 
@@ -41,7 +41,7 @@ impl FromStr for NovelStatus {
             "Original completed" => Ok(NovelStatus::OriginalCompleted),
             "Completed" => Ok(NovelStatus::Completed),
             "Hiatus" => Ok(NovelStatus::Hiatus),
-            "Dropped" => Ok(NovelStatus::Dropped),
+            "Abandoned" => Ok(NovelStatus::Abandoned),
             _ => Ok(NovelStatus::Other),
         }
     }
@@ -54,7 +54,7 @@ impl ToString for NovelStatus {
             NovelStatus::OriginalCompleted => fl!("original-completed"),
             NovelStatus::Completed => fl!("completed"),
             NovelStatus::Hiatus => fl!("hiatus"),
-            NovelStatus::Dropped => fl!("dropped"),
+            NovelStatus::Abandoned => fl!("abandoned"),
             NovelStatus::Other => fl!("other"),
         }
     }
@@ -69,7 +69,7 @@ impl NovelStatus {
             NovelStatus::OriginalCompleted => "original_completed",
             NovelStatus::Completed => "completed",
             NovelStatus::Hiatus => "hiatus",
-            NovelStatus::Dropped => "dropped",
+            NovelStatus::Abandoned => "abandoned",
             NovelStatus::Other => "other",
         }
     }
@@ -80,7 +80,7 @@ impl NovelStatus {
             NovelStatus::OriginalCompleted.to_string(),
             NovelStatus::Completed.to_string(),
             NovelStatus::Hiatus.to_string(),
-            NovelStatus::Dropped.to_string(),
+            NovelStatus::Abandoned.to_string(),
             NovelStatus::Other.to_string(),
         ]
     }
@@ -95,7 +95,7 @@ impl NovelStatus {
             1 => NovelStatus::OriginalCompleted,
             2 => NovelStatus::Completed,
             3 => NovelStatus::Hiatus,
-            4 => NovelStatus::Dropped,
+            4 => NovelStatus::Abandoned,
             _ => NovelStatus::Other,
         }
     }

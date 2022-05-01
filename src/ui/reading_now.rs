@@ -139,9 +139,7 @@ impl UI {
 
             let novel_type = format!("{} - {}", novel.novel_type.to_string(), novel.status());
 
-            if novel.status != NovelStatus::Completed {
-                btn_reading_type.set_visible(true);
-            }
+            btn_reading_type.set_visible(novel.status != NovelStatus::Completed);
 
             // Hide artist row if empty
             reading_artist_box.set_visible(!novel.artist.is_empty());
@@ -274,9 +272,10 @@ impl UI {
         for novel in novels {
             let spinner = gtk::Spinner::new();
 
-            let label_novel_text = format!("-> {}", novel.title);
+            let label_novel_text = format!("<b>{}</b>", novel.title);
             let label_novel = cascade! {
-                gtk::Label::new(Some(&label_novel_text));
+                gtk::Label::new(None);
+                ..set_markup(&label_novel_text);
                 ..set_wrap(true);
                 ..set_wrap_mode(WrapMode::Word);
                 ..set_selectable(true);
@@ -284,7 +283,7 @@ impl UI {
                 ..set_xalign(0.0);
             };
 
-            let label_link_text = fl!("add-to-keywords", k = keyword.clone());
+            let label_link_text = format!("[{}]", fl!("add-button"));
             let link_btn = cascade! {
                 gtk::LinkButton::new("");
                 ..set_label(&label_link_text);

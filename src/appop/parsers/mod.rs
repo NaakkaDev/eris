@@ -1,3 +1,4 @@
+use chrono::Local;
 use regex::Regex;
 use select::document::Document;
 use std::fs::File;
@@ -96,7 +97,11 @@ impl FromStr for NovelParser {
 pub trait ParseNovel {
     fn parse_novel(&self, slug: &str) -> Option<Novel>;
     fn generate_id(&self, title: &str) -> String {
-        novel_title_to_slug(title)
+        if title == "unknown_novel" {
+            format!("Unknown Novel {}", Local::now().timestamp())
+        } else {
+            novel_title_to_slug(title)
+        }
     }
     fn generate_source(&self, slug: &str) -> String {
         // `slug´ is never invalid here so this will never fail
@@ -150,7 +155,7 @@ pub trait ParseNovel {
         } else if strings.iter().any(|&s| s.to_lowercase().contains("hiatus")) {
             NovelStatus::Hiatus
         } else if strings.iter().any(|&s| s.to_lowercase().contains("dropped")) {
-            NovelStatus::Dropped
+            NovelStatus::Abandoned
         } else {
             NovelStatus::Other
         };

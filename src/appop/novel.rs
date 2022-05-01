@@ -696,12 +696,12 @@ impl AppOp {
                 corpus.add_text(&novel.title.to_lowercase());
             }
             if let Some(top_result) = corpus.search(window_title, 0.25).first() {
-                if top_result.similarity > 0.97 {
+                if top_result.similarity > 0.9 {
                     return self.get_by_title(&top_result.text);
                 } else {
                     debug!(
-                        "{} (did you mean {}? [{:.0}% match])",
-                        window_title,
+                        "{} (did you mean {} [{:.0}% match]?)",
+                        window_title.to_lowercase(),
                         top_result.text,
                         top_result.similarity * 100.0
                     );
@@ -885,7 +885,7 @@ impl AppOp {
         }
 
         // Check if the novel status allows for automatic novel list status changing to `Completed`
-        let can_complete = matches!(&novel.status, NovelStatus::Completed | NovelStatus::Dropped)
+        let can_complete = matches!(&novel.status, NovelStatus::Completed | NovelStatus::Abandoned)
             || self.settings.read().novel_recognition.autocomplete_ongoing;
 
         // Check if the novel should be moved to "reading" status

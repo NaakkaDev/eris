@@ -4,6 +4,7 @@ use crate::app::AppRuntime;
 use crate::appop::AppOp;
 use chrono::Local;
 use clokwerk::{ScheduleHandle, Scheduler, TimeUnits};
+use ngrammatic::{CorpusBuilder, Pad};
 use parking_lot::RwLock;
 use regex::Regex;
 use std::sync::Arc;
@@ -264,17 +265,7 @@ impl AppOp {
                     self.currently_reading.timestamp_set()
                 }
             } else {
-                // Novel suggestions if novel was not found earlier
-                let potential_novels = self.find_potential_novels(&novel_title);
-                let keyword = novel_title
-                    .split_whitespace()
-                    .map(String::from)
-                    .collect::<Vec<String>>()
-                    .first()
-                    .unwrap()
-                    .to_string();
-                self.ui
-                    .show_potential_novels(keyword, potential_novels, self.app_runtime.clone());
+                self.potential_novels(novel_title.clone());
             }
 
             if already_done {
@@ -325,6 +316,26 @@ impl AppOp {
         }
 
         None
+    }
+
+    /// Display potential novels on the reading now view if novels exist in the DB.
+    pub fn potential_novels(&self, novel_title: String) {
+        if let Some(novels) = &self.db.read().novels {
+            // Novel suggestions if novel was not found earlier
+            // Fuzzy search potential novels
+            let mut corpus = CorpusBuilder::new().arity(2).pad_full(Pad::Auto).finish();
+            for novel in novels {
+                corpus.add_text(&novel.title.to_lowercase());
+            }
+            // List of potential `Novel`s
+            let mut potential_novels = vec![];
+            for novel_title in corpus.search(&novel_title, 0.35) {
+                potential_novels.push(self.get_by_title(&novel_title.text).unwrap());
+            }
+            // Show the potential novels UI
+            self.ui
+                .show_potential_novels(novel_title, potential_novels, self.app_runtime.clone());
+        }
     }
 }
 
@@ -434,6 +445,11 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
         // Find volume number
         //
         for re_pattern in volume_res {
+            // Do nothing if volume is already set
+            if novel_recognition_data.volume > 0 {
+                break;
+            }
+
             let vol_re = Regex::new(re_pattern).unwrap();
             if let Some(caps) = vol_re.captures(&title_value.to_lowercase()) {
                 let potential_volume = caps.get(1).unwrap().as_str();
@@ -456,6 +472,11 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
         // Find chapter number
         //
         for re_pattern in chapter_res {
+            // Do nothing if chapter is already set
+            if novel_recognition_data.chapter > 0.0 {
+                break;
+            }
+
             let ch_re = Regex::new(re_pattern).unwrap();
             if let Some(caps) = ch_re.captures(&title_value.to_lowercase()) {
                 let mut potential_chapter = caps.get(1).unwrap().as_str();
@@ -497,7 +518,8 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
         // Find part number
         //
         for re_pattern in part_res {
-            if ignore_part {
+            // Do nothing if part can be ignored or side story is already set
+            if ignore_part || novel_recognition_data.side_story > 0 {
                 break;
             }
             let part_re = Regex::new(re_pattern).unwrap();

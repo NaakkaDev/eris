@@ -214,9 +214,11 @@ impl NewNovelDialog {
             if page == 0 {
                 // Notebook page is 0 so nothing probably not reading anything, use default values
                 self.url_combobox.set_active(Some(1));
+                self.status_combobox.set_active_id(Some("1"));
                 novel_url_entry.set_text("");
                 novel_url_entry.grab_focus();
                 novel_chapters_read_spinbutton.set_value(0.0);
+                novel_volumes_read_spinbutton.set_value(0.0);
                 novel_keywords_entry.set_text("");
             } else {
                 // Reading something so pre-set some values

@@ -72,26 +72,18 @@ impl ParseNovel for Webnovel {
     }
 
     fn parse_title(&self) -> String {
-        let small_tag_text = self
+        let meta_keywords = self
             .document
-            .select(
-                Class("det-info")
-                    .descendant(Name("div"))
-                    .descendant(Name("h2"))
-                    .descendant(Name("small")),
-            )
+            .select(Attr("name", "keywords"))
             .next()
             .unwrap()
-            .text();
+            .attr("content")
+            .unwrap()
+            .split(',')
+            .map(|t| t.trim().to_string())
+            .collect::<Vec<String>>();
 
-        self.document
-            .select(Class("det-info").descendant(Name("div")).descendant(Name("h2")))
-            .next()
-            .unwrap()
-            .text()
-            .replace(&small_tag_text, "")
-            .trim()
-            .to_string()
+        meta_keywords[0].clone()
     }
 
     fn parse_image(&self, novel_id: &str) -> Vec<String> {
