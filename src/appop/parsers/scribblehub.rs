@@ -94,7 +94,7 @@ impl ParseNovel for ScribbleHub {
             .unwrap()
             .text()
             .trim()
-            .replace("\n", "\n\n")
+            .replace('\n', "\n\n")
             .split(' ')
             .map(String::from)
             .filter(|s| !s.is_empty())

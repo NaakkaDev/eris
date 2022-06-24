@@ -170,7 +170,7 @@ impl AppOp {
         debug!("window_title => {:?}", window_title);
 
         if let Some(window_title) = clean_window_title_string(window_title) {
-            let window_title = window_title.replace("|", "-").replace(".epub", "");
+            let window_title = window_title.replace('|', "-").replace(".epub", "");
 
             let pattern_index = split_pattern.iter().position(|&p| window_title.contains(p));
             if pattern_index.is_none() {

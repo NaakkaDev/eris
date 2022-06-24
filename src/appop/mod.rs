@@ -225,7 +225,7 @@ impl AppOp {
                                     // because moving `ui` in here is an issue as it is
                                     // needed afterwards
                                     let dialog = gtk::MessageDialog::new(
-                                        Some(&window.to_owned()),
+                                        Some(window),
                                         DialogFlags::DESTROY_WITH_PARENT,
                                         MessageType::Warning,
                                         ButtonsType::Ok,
@@ -290,7 +290,7 @@ impl AppOp {
         }
 
         self.ui.history.add_columns(&self.ui.builder);
-        self.ui.history.populate_columns(&self.history.read().items);
+        // self.ui.history.populate_columns(&self.history.read().items);
 
         debug!("appop::init");
 

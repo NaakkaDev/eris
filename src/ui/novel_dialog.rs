@@ -65,7 +65,7 @@ impl NovelDialog {
         builder.label_i18n("novel_description_label", &fl!("novel-description"));
         builder.label_i18n("main_info_tab_label", &fl!("novel-main-info-tab"));
         builder.label_i18n("other_info_tab_label", &fl!("novel-other-info-tab"));
-        builder.label_i18n("novel_list_label", &fl!("novel-list-title"));
+        builder.label_i18n("novel_list_label", &fl!("novel-list"));
         builder.label_i18n("chapters_read_label", &(fl!("novel-chapters-read") + ":"));
         builder.label_i18n("valid_formats_label", &fl!("novel-chapters-format"));
         builder.label_i18n("status_label", &(fl!("status") + ":"));
@@ -550,6 +550,8 @@ impl NovelDialog {
     }
 
     pub fn update_edit(&self, builder: &gtk::Builder, novel: &Novel) {
+        println!("============== {:?} ==============", novel.status.to_string());
+
         let novel_title_edit = builder.get::<gtk::Entry>("novel_title_edit");
         let image = builder.get::<gtk::Image>("novel_image_edit");
         let novel_alt_title_edit = builder.get::<gtk::TextView>("novel_alt_title_edit");

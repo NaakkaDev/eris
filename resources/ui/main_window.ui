@@ -2,6 +2,50 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkPopover" id="reading_popover">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
+        <property name="margin-top">6</property>
+        <property name="margin-bottom">6</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">10</property>
+        <child>
+          <object class="GtkButton" id="btn_reading_info">
+            <property name="label" translatable="yes">Novel Information</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <object class="GtkButton" id="btn_reading_type">
+            <property name="label" translatable="yes">Set as Completed</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="width-request">740</property>
     <property name="can-focus">False</property>
@@ -584,7 +628,6 @@
                                     <property name="can-focus">False</property>
                                     <property name="margin-end">10</property>
                                     <property name="orientation">vertical</property>
-                                    <property name="spacing">10</property>
                                     <child>
                                       <object class="GtkImage" id="reading_novel_image">
                                         <property name="width-request">150</property>
@@ -606,6 +649,7 @@
                                       <object class="GtkLabel" id="reading_type">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
+                                        <property name="margin-top">10</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -614,10 +658,10 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkButton" id="btn_reading_type">
-                                        <property name="label" translatable="yes">Set as Completed</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">True</property>
+                                      <object class="GtkLabel" id="reading_status">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="margin-top">3</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -626,11 +670,26 @@
                                       </packing>
                                     </child>
                                     <child>
+                                      <object class="GtkLabel" id="reading_list">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="margin-top">20</property>
+                                        <attributes>
+                                          <attribute name="style" value="italic"/>
+                                        </attributes>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
+                                    <child>
                                       <!-- n-columns=2 n-rows=5 -->
                                       <object class="GtkGrid" id="reading_grid">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
-                                        <property name="margin-top">12</property>
+                                        <property name="margin-top">22</property>
                                         <property name="column-spacing">6</property>
                                         <child>
                                           <object class="GtkLabel" id="reading_reading_label">
@@ -864,7 +923,7 @@
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">3</property>
+                                        <property name="position">4</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -893,19 +952,58 @@
                                             <property name="orientation">vertical</property>
                                             <property name="spacing">10</property>
                                             <child>
-                                              <object class="GtkLabel" id="reading_novel_title_label">
+                                              <object class="GtkBox">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
-                                                <property name="margin-left">10</property>
-                                                <property name="margin-start">10</property>
-                                                <property name="label" translatable="yes">title</property>
-                                                <property name="wrap">True</property>
-                                                <property name="selectable">True</property>
-                                                <property name="xalign">0</property>
-                                                <property name="yalign">0</property>
-                                                <style>
-                                                  <class name="novel-title"/>
-                                                </style>
+                                                <child>
+                                                  <object class="GtkLabel" id="reading_novel_title_label">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">False</property>
+                                                    <property name="margin-left">10</property>
+                                                    <property name="margin-start">10</property>
+                                                    <property name="label" translatable="yes">title</property>
+                                                    <property name="wrap">True</property>
+                                                    <property name="selectable">True</property>
+                                                    <property name="xalign">0</property>
+                                                    <property name="yalign">0</property>
+                                                    <style>
+                                                      <class name="novel-title"/>
+                                                    </style>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">True</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">0</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkMenuButton">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="focus-on-click">False</property>
+                                                    <property name="receives-default">True</property>
+                                                    <property name="popover">reading_popover</property>
+                                                    <child>
+                                                      <object class="GtkLabel">
+                                                        <property name="visible">True</property>
+                                                        <property name="can-focus">False</property>
+                                                        <property name="label" translatable="yes">...</property>
+                                                        <property name="justify">center</property>
+                                                        <property name="yalign">0</property>
+                                                        <attributes>
+                                                          <attribute name="weight" value="bold"/>
+                                                          <attribute name="scale" value="1.25"/>
+                                                        </attributes>
+                                                      </object>
+                                                    </child>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="pack-type">end</property>
+                                                    <property name="position">1</property>
+                                                  </packing>
+                                                </child>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -1332,6 +1430,7 @@
                                                   <object class="GtkBox">
                                                     <property name="visible">True</property>
                                                     <property name="can-focus">False</property>
+                                                    <property name="margin-top">20</property>
                                                     <property name="spacing">20</property>
                                                     <child>
                                                       <object class="GtkLabel" id="not_found_label">
@@ -1729,24 +1828,78 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow" id="history_scrolled">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="kinetic-scrolling">False</property>
-                    <property name="overlay-scrolling">False</property>
-                    <property name="propagate-natural-height">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkTreeView" id="history_treeview">
+                      <object class="GtkScrolledWindow" id="history_scrolled">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="search-column">0</property>
-                        <property name="fixed-height-mode">True</property>
-                        <property name="hover-selection">True</property>
-                        <property name="enable-grid-lines">both</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
+                        <property name="kinetic-scrolling">False</property>
+                        <property name="overlay-scrolling">False</property>
+                        <property name="propagate-natural-height">True</property>
+                        <child>
+                          <object class="GtkTreeView" id="history_treeview">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="search-column">0</property>
+                            <property name="fixed-height-mode">True</property>
+                            <property name="hover-selection">True</property>
+                            <property name="enable-grid-lines">both</property>
+                          </object>
                         </child>
                       </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-left">10</property>
+                        <property name="margin-right">10</property>
+                        <property name="margin-start">10</property>
+                        <property name="margin-end">10</property>
+                        <property name="margin-top">10</property>
+                        <property name="margin-bottom">10</property>
+                        <property name="spacing">10</property>
+                        <child>
+                          <object class="GtkButton" id="btn_load_history">
+                            <property name="label" translatable="yes">Load all history</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label_load_history">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">This can take a while.</property>
+                            <property name="xalign">0</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="pack-type">end</property>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>

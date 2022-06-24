@@ -249,11 +249,8 @@ impl AppOp {
         let (key, _disp) = hkcu.create_subkey(&path).unwrap();
 
         if add_to_reg {
-            key.set_value(
-                &APPLICATION_ID.to_string(),
-                &current_exe().unwrap().to_str().unwrap().to_string(),
-            )
-            .unwrap();
+            key.set_value(APPLICATION_ID, &current_exe().unwrap().to_str().unwrap().to_string())
+                .unwrap();
         } else {
             key.delete_value(APPLICATION_ID).unwrap();
         }

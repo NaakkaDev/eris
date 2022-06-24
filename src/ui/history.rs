@@ -116,6 +116,10 @@ impl HistoryList {
         self.scroll_to_top();
     }
 
+    pub fn list_clear(&mut self) {
+        self.list.clear();
+    }
+
     /// Move scrollbar to top
     pub fn scroll_to_top(&self) {
         self.treeview.vadjustment().unwrap().set_value(35.0);

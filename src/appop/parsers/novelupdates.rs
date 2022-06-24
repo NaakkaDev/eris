@@ -35,7 +35,7 @@ impl ParseNovel for NovelUpdates {
             .next()
             .unwrap()
             .text()
-            .replace("\n", " ");
+            .replace('\n', " ");
         if status_content.trim() != "N/A" {
             let mut split_status: Vec<&str> = status_content.trim().split(' ').collect();
             // Reverse the split list so that any fancy chapter math is at the end
@@ -118,7 +118,7 @@ impl ParseNovel for NovelUpdates {
             .unwrap()
             .text()
             .trim()
-            .replace("\n", "\n\n")
+            .replace('\n', "\n\n")
     }
 
     fn parse_author(&self) -> Vec<String> {
@@ -165,7 +165,7 @@ impl ParseNovel for NovelUpdates {
             .next()
             .unwrap()
             .text()
-            .replace("\n", "")
+            .replace('\n', "")
     }
 
     fn parse_translated(&self) -> Option<bool> {
@@ -284,7 +284,7 @@ impl ParseNovel for NovelUpdates {
             .next()
             .unwrap()
             .text()
-            .replace("\n", "")
+            .replace('\n', "")
             .parse::<i32>()
             .unwrap_or(0000)
     }
@@ -293,7 +293,7 @@ impl ParseNovel for NovelUpdates {
         self.document
             .select(Attr("id", "showopublisher").descendant(Name("a")))
             .into_iter()
-            .map(|node| node.text().replace("\n", ""))
+            .map(|node| node.text().replace('\n', ""))
             .collect()
     }
 
@@ -301,7 +301,7 @@ impl ParseNovel for NovelUpdates {
         self.document
             .select(Attr("id", "showepublisher").descendant(Name("a")))
             .into_iter()
-            .map(|node| node.text().replace("\n", ""))
+            .map(|node| node.text().replace('\n', ""))
             .collect()
     }
 }

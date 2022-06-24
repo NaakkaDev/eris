@@ -302,10 +302,6 @@ impl Novel {
         self.title.to_string()
     }
 
-    pub fn status(&self) -> String {
-        self.status.to_string()
-    }
-
     /// Returns the correct icon `Pixbuf` that matches the novel `status`.
     pub fn status_pix(&self) -> Pixbuf {
         let file = format!("icons/{}.png", self.status.to_str());
@@ -368,19 +364,19 @@ impl Novel {
         let mut content = String::new();
 
         if self.content.volumes > 0 {
-            content.push_str(&format!("{} ", self.content.volumes.to_string()));
+            content.push_str(&format!("{} ", self.content.volumes));
             content.push_str(&fl!("volumes").to_lowercase());
         }
         if self.content.chapters > 0.0 {
             if self.content.volumes > 0 {
                 content.push_str(" / ");
             }
-            content.push_str(&format!("{} ", self.content.chapters.to_string()));
+            content.push_str(&format!("{} ", self.content.chapters));
             content.push_str(&fl!("chapters").to_lowercase());
         }
         if self.content.side_stories > 0 {
             content.push_str(" & ");
-            content.push_str(&format!("{} ", self.content.side_stories.to_string()));
+            content.push_str(&format!("{} ", self.content.side_stories));
             content.push_str(&fl!("side-stories").to_lowercase());
         }
 

@@ -88,7 +88,7 @@ impl NewNovelDialog {
                     }
                     Err(_e) => {
                         if entry.text().to_string().contains(' ') {
-                            entry.set_text(&entry.text().replace(" ", "-"));
+                            entry.set_text(&entry.text().replace(' ', "-"));
                         }
                     }
                 }

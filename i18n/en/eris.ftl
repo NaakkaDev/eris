@@ -86,6 +86,7 @@ open-dir-button = Open directory
 continue-reading-button = Continue reading
 add-button = Add
 reading-type-button = Set as Completed
+load-history-button = Load complete history
 
 #
 # History
@@ -94,6 +95,7 @@ added-novel = Added novel
 deleted-novel = Deleted novel
 updated-novel = Updated novel
 moved-novel = Moved to:
+load-label = This can take a while.
 
 
 #
@@ -172,7 +174,6 @@ not-fully-translated = Incomplete translation
 no-tags = No tags
 no-description = No description
 
-novel-list-title = Novel list
 novel-chapters-read = Volumes/chapters/side stories read
 novel-chapters-format =
     Valid formats:

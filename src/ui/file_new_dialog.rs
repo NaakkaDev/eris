@@ -86,7 +86,7 @@ impl FileNewNovelDialog {
                     }
                     Err(_e) => {
                         if entry.text().to_string().contains(' ') {
-                            entry.set_text(&entry.text().replace(" ", "-"));
+                            entry.set_text(&entry.text().replace(' ', "-"));
                         }
                     }
                 }
@@ -121,7 +121,7 @@ impl FileNewNovelDialog {
                     let url = format!("{}{}", url_combobox.active_text().unwrap(), novel_url_entry.text());
 
                     let novel_file_data = NovelFile {
-                        novel_string_id: slug::slugify(novel_title.text().to_string().replace("’", "-").replace("'", "-")),
+                        novel_string_id: slug::slugify(novel_title.text().to_string().replace('’', "-").replace('\'', "-")),
                         novel_title: novel_title.text().to_string(),
                         authors: novel_authors.text().to_string(),
                         genres: novel_genres.text().to_string(),

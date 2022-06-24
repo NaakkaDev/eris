@@ -2,7 +2,7 @@ mod about_dialog;
 mod exporter;
 mod file_new_dialog;
 mod filter;
-mod history;
+pub(crate) mod history;
 pub(crate) mod new_dialog;
 mod notifcation_dialog;
 mod novel_dialog;
@@ -15,6 +15,7 @@ use gdk::gdk_pixbuf::Pixbuf;
 use glib::SignalHandlerId;
 use std::collections::HashMap;
 use std::io::Cursor;
+use std::time::Instant;
 
 use crate::app::localize::available_languages;
 use crate::app::novel::{Novel, NovelStatus, NovelType};
@@ -92,10 +93,12 @@ impl UI {
         builder.label_i18n("previously_read_label", &(fl!("previously-read") + ":"));
         builder.label_i18n("currently_reading_label", &fl!("currently-reading"));
         builder.label_i18n("menu_update_label", &fl!("menu-update"));
+        builder.label_i18n("label_load_history", &fl!("load-label"));
 
         builder.button_i18n("btn_add", &fl!("add-button"));
         builder.button_i18n("btn_continue_reading", &fl!("continue-reading-button"));
         builder.button_i18n("btn_reading_type", &fl!("reading-type-button"));
+        builder.button_i18n("btn_load_history", &fl!("load-history-button"));
 
         builder.menu_item_i18n("menu_file", &fl!("menu-file"));
         builder.menu_item_i18n("menu_tools", &fl!("menu-tools"));
@@ -205,6 +208,8 @@ impl UI {
         let view_selection_listbox = self.builder.get::<gtk::ListBox>("view_selection_listbox");
         let btn_continue_reading = self.builder.get::<gtk::Button>("btn_continue_reading");
         let btn_reading_type = self.builder.get::<gtk::Button>("btn_reading_type");
+        let btn_reading_info = self.builder.get::<gtk::Button>("btn_reading_info");
+        let btn_load_history = self.builder.get::<gtk::Button>("btn_load_history");
 
         main_notebook.connect_switch_page(glib::clone!(@strong app_runtime => move |_, _, page| {
             app_runtime.update_state_with(move |state| {
@@ -231,10 +236,52 @@ impl UI {
         btn_reading_type.connect_clicked(glib::clone!(@strong app_runtime => move |btn| {
             btn.set_visible(false);
             app_runtime.update_state_with(|state| {
-                let mut novel = state.currently_reading.novel.read().clone().unwrap();
-                novel = state.update_novel_status(novel.clone(), NovelStatus::Completed);
-                state.ui.update_reading_now(&Some(novel));
+                let novel_reading = state.currently_reading.novel.read().clone();
+                if let Some(novel) = novel_reading {
+                    let updated_novel = state.update_novel_status(novel, NovelStatus::Completed);
+                    state.ui.novel_dialog.update_edit(&state.ui.builder, &updated_novel);
+                    state.ui.lists.active_novel = Some(updated_novel.clone());
+                    state.ui.update_reading_now(&Some(updated_novel));
+                }
+
+                state.ui.close_reading_popover();
             })
+        }));
+
+        btn_reading_info.connect_clicked(glib::clone!(@strong app_runtime => move |_btn| {
+            app_runtime.update_state_with(|state| {
+                if let Some(potentially_old_novel) = state.currently_reading.novel.read().clone() {
+                    if let Some(novel) = state.get_by_id(potentially_old_novel.id) {
+                        state.ui.lists.active_list = ListStatus::from_i32(novel.settings.list_status.to_i32());
+                        state.ui.lists.active_iter = state.ui.lists.find_iter(&novel);
+                        state.ui.lists.active_novel = Some(novel.clone());
+                        state.ui.show_novel_dialog(&novel, &state.settings.read());
+                    }
+                }
+
+                state.ui.close_reading_popover();
+            })
+        }));
+
+        // Load all history on button click
+        let label_load_history = self.builder.get::<gtk::Label>("label_load_history");
+        btn_load_history.connect_clicked(glib::clone!(@strong app_runtime => move |btn| {
+            let label_load_history = label_load_history.clone();
+            app_runtime.update_state_with(move |state| {
+                let load_start = Instant::now();
+                // Clear the history list
+                state.ui.history.list_clear();
+                // Now load all the entries into it
+                state.ui.history.populate_columns(&state.history.read().items);
+                // Tell user the cool stuff
+                label_load_history.set_text(&format!(
+                    "Loaded {:?} history entries in {:?}",
+                    &state.history.read().items.len(),
+                    load_start.elapsed()
+                ));
+            });
+            // Hide the button as it is not needed anymore
+            btn.set_visible(false);
         }));
 
         self.main_window
@@ -415,5 +462,10 @@ impl UI {
 
         // This seeimgly does nothing but eh
         update_btn.set_visible(show);
+    }
+
+    pub fn close_reading_popover(&self) {
+        let reading_popover = self.builder.get::<gtk::Popover>("reading_popover");
+        reading_popover.hide();
     }
 }

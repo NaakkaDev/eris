@@ -94,10 +94,33 @@ pub fn nil_str(value: &str) -> String {
     value.to_string()
 }
 
+/// Caplitaze the `str` and return it as `String`.
 pub fn capitalize_str(s: &str) -> String {
     let mut c = s.chars();
     match c.next() {
         None => String::new(),
         Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
     }
+}
+
+/// Return true if part(s) of a longer string is in a shorter one. Lie.. reverse of "is `foo` in `foobar`".
+///
+/// Example: `Novel Name chapter 12` is in `Novel Name`.
+///
+///
+pub fn split_checker(split_source: &[&str], target: &str) -> bool {
+    let mut count = 0;
+    let split_target = target.split(' ').collect::<Vec<_>>();
+
+    for i in 0..split_target.len() {
+        if split_source.get(i).unwrap_or(&"").to_lowercase() == split_target.get(i).unwrap().to_lowercase() {
+            count += 1;
+
+            if count == split_target.len() {
+                return true;
+            }
+        }
+    }
+
+    false
 }

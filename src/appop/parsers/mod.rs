@@ -231,5 +231,5 @@ pub fn novel_title_to_slug(novel_title: &str) -> String {
         })
         .collect();
     // Slugified string from the novel title
-    slug::slugify(&pre_slug.replace("_", ""))
+    slug::slugify(&pre_slug.replace('_', ""))
 }

@@ -105,7 +105,9 @@ impl UI {
         let reading_novel_description_text = self.builder.get::<gtk::TextView>("reading_novel_description_text");
         let reading_novel_slug = self.builder.get::<gtk::Label>("reading_novel_slug");
         let novel_not_found_box = self.builder.get::<gtk::Box>("novel_not_found_box");
+        let reading_status = self.builder.get::<gtk::Label>("reading_status");
         let reading_type = self.builder.get::<gtk::Label>("reading_type");
+        let reading_list = self.builder.get::<gtk::Label>("reading_list");
         let btn_reading_type = self.builder.get::<gtk::Button>("btn_reading_type");
         let alt_titles_box = self.builder.get::<gtk::Box>("alt_titles_box");
         let reading_artist_box = self.builder.get::<gtk::Box>("reading_artist_box");
@@ -137,8 +139,6 @@ impl UI {
                     .set_text(&alt_titles.join("\n"));
             }
 
-            let novel_type = format!("{} - {}", novel.novel_type.to_string(), novel.status());
-
             btn_reading_type.set_visible(novel.status != NovelStatus::Completed);
 
             // Hide artist row if empty
@@ -148,7 +148,9 @@ impl UI {
             reading_novel_detail_author_value.set_text(&novel.authors());
             reading_novel_detail_artist_value.set_text(&novel.artists());
             reading_novel_detail_genre_value.set_text(&novel.genres());
-            reading_type.set_text(&novel_type);
+            reading_status.set_text(&novel.status.to_string());
+            reading_type.set_text(&novel.novel_type.to_string());
+            reading_list.set_text(&novel.settings.list_status.to_string());
 
             if let Some(description) = &novel.description {
                 reading_novel_description_text
@@ -203,6 +205,8 @@ impl UI {
             novel_info_box.set_visible(false);
 
             reading_type.set_text("");
+            reading_status.set_text("");
+            reading_list.set_text("");
             reading_volume_max.set_label("?");
             reading_chapter_max.set_label("?");
             reading_ss_max.set_label("?");

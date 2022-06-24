@@ -11,6 +11,7 @@ use crate::appop::novel_recognition::NovelRecognitionData;
 use crate::appop::parsers::NovelParser;
 use crate::ui::new_dialog::guess_keyword;
 use crate::utils::gtk::BuilderExtManualCustom;
+use crate::utils::split_checker;
 use crate::{data_dir, DATA_IMAGE_DIR};
 use anyhow::Context;
 use chrono::Local;
@@ -335,7 +336,7 @@ impl AppOp {
 
     /// Handles moving a `Novel` to another list
     pub fn move_novel(&mut self, novel_id: String, to_list: ListStatus) {
-        if let Some(mut novel) = self.get_by_id(novel_id) {
+        if let Some(mut novel) = self.get_by_id(novel_id.clone()) {
             // Create a copy of the novel settings and update the list status
             let mut new_novel_settings = novel.settings.clone();
             new_novel_settings.list_status = to_list;
@@ -348,6 +349,12 @@ impl AppOp {
             self.ui.lists.list_move(&novel, iter);
             // Add a history entry
             self.history_send(NovelHistoryItem::new_history_novel_list_change(&novel));
+            // Update reading now view if currently reading novel is the one moved
+            if let Some(anovel) = self.currently_reading.novel.read().as_ref() {
+                if anovel.id == novel_id {
+                    self.ui.update_reading_now(&Some(novel));
+                }
+            }
         } else {
             // Practically impossible
             error!("Tried to move a novel but it could not be found anymore?!");
@@ -473,6 +480,7 @@ impl AppOp {
 
             self.ui.lists.list_update(&novel);
             self.ui.filter.list_update(&novel);
+            self.ui.update_reading_now(&Some(novel));
         }
     }
 
@@ -715,11 +723,22 @@ impl AppOp {
     /// Try to find `Novel` by `Novel.settings.window_titles` from the db.
     pub fn get_by_novel_keywords(&self, window_title: &str) -> Option<Novel> {
         if let Some(novels) = &self.db.read().novels {
+            let split_title = window_title.split(' ').collect::<Vec<_>>();
             for novel in novels {
                 if let Some(window_titles) = &novel.settings.window_titles {
                     // Get by exact match
                     if window_titles.iter().any(|i| !i.is_empty() && i == window_title) {
                         return Some(novel.clone());
+                    } else {
+                        if split_checker(&split_title, &novel.title) {
+                            return Some(novel.clone());
+                        }
+
+                        for one_title in window_titles {
+                            if split_checker(&split_title, one_title) {
+                                return Some(novel.clone());
+                            }
+                        }
                     }
                 }
             }
