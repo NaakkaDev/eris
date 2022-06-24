@@ -871,6 +871,26 @@ impl AppOp {
             new_side_story_num = 0;
         }
 
+        // If new chapter number is higher then the last available chapter, the novel status
+        // can be considered "completed" and there are side stories that have not been read then assume
+        // this new chapter number is a side story
+        if matches!(&novel.status, NovelStatus::Completed | NovelStatus::Abandoned)
+            && new_chapter_read_num > novel.content.chapters
+            && novel.content.side_stories > 0
+            && novel.settings.content_read.side_stories < novel.content.side_stories
+        {
+            // Maliciously parse f32 into i32, muahaha. It should be correct enough.
+            new_side_story_num = (new_chapter_read_num - novel.content.chapters)
+                .to_string()
+                .split('.')
+                .collect::<Vec<_>>()
+                .get(0)
+                .unwrap()
+                .parse()
+                .unwrap_or(novel.settings.content_read.side_stories + 1);
+            new_chapter_read_num = novel.content.chapters;
+        }
+
         // Do nothing if the chapter number being read is less or same as
         // currently saved chapter read number and same for volume
         if !exact_num
@@ -916,7 +936,7 @@ impl AppOp {
         // Should never work for `OnGoing` novels.
         let is_completed = (volume_num >= novel.content.volumes)
             && (new_chapter_read_num >= novel.content.chapters && novel.content.chapters > 0.0)
-            && (side_story_num >= novel.content.side_stories)
+            && (new_side_story_num >= novel.content.side_stories)
             && can_complete;
 
         // Edit chapter read count

@@ -27,7 +27,7 @@ guess what webnovel might be being read. Each novel can have novel specific keyw
 
 Any recognized webnovel will have its "chapters read" amount changed after 120 seconds (changeable in settings).
 
-The whole recognition system can be toggled on and off.
+The recognition system can be toggled on and off.
 
 ### Portability
 By default Eris saves the data into the OS's [data directory](https://docs.rs/dirs/4.0.0/dirs/fn.data_dir.html). It is possible to use Eris as portable application though.
@@ -46,7 +46,7 @@ _Might_ work the same as linux.
 If the novel chapter URL is easily mutable, e.g: `https://example.com/novelname/chapter-1`
 then Eris can open the next chapter on your default browser. Assuming the reading URL is set in the novel settings.
 
-There is also an option for Eris to open a file with user specified third party software with arguments
+There is also an option for Eris to open a file with any third party software with arguments
 (filename, page number).
 
 ### History
