@@ -431,10 +431,11 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
     ];
 
     let chapter_res = [
+        r"c(?:h)?(?:apter)?[\.:;\-_]?\s?(\d+)(?:.*(?:p|[\.:;\-_]|:?art)\s?(\d+))?", // chapter 1 (part 1) etc. variations
         r"c(?:h)?(?:apter)?[\.:;\-_]?\s?(\d+)", // h or hapter or . or : or ; or - or _ or space after `c`
     ];
 
-    let part_res = [
+    let sidestory_res = [
         r"extra.*?[\.:;\-_story|chapter]\s?[\(]?(\d+)", // e.g: extra story 2 or extra chapter 2
         r"side.*?[\.:;\-_story|chapter]\s?[\(]?(\d+)",  //
         r"special.*?[\.:;\-_story|chapter]\s?[\(]?(\d+)", //
@@ -479,7 +480,11 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
 
             let ch_re = Regex::new(re_pattern).unwrap();
             if let Some(caps) = ch_re.captures(&title_value.to_lowercase()) {
-                let mut potential_chapter = caps.get(1).unwrap().as_str();
+                let mut potential_chapter = format!(
+                    "{}.{}",
+                    caps.get(1).map_or("0", |m| m.as_str()),
+                    caps.get(2).map_or("0", |m| m.as_str())
+                );
 
                 // This if else could be nicer, requires some brainz
                 if potential_chapter.contains('.') {
@@ -488,7 +493,7 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
                     let mut potential_float_chars = potential_chapter.chars();
                     if potential_float_chars.clone().last().unwrap() == '.' {
                         potential_float_chars.next_back();
-                        potential_chapter = potential_float_chars.as_str();
+                        potential_chapter = potential_float_chars.as_str().parse().unwrap();
                     }
 
                     // Probably a float so try to turn it into float and done
@@ -517,7 +522,7 @@ fn extract_novel_data_from_title(strings: &[&str]) -> NovelRecognitionData {
         //
         // Find part number
         //
-        for re_pattern in part_res {
+        for re_pattern in sidestory_res {
             // Do nothing if part can be ignored or side story is already set
             if ignore_part || novel_recognition_data.side_story > 0 {
                 break;
