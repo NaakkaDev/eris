@@ -455,8 +455,11 @@ pub struct NovelSettings {
     pub file: Option<PathBuf>,
     /// Personal notes.
     pub notes: Option<String>,
-    /// Last time `content_read` values changed.
-    pub last_updated: i64,
+    /// Last time `content_read` values changed from the novel recognition system.
+    /// Ignores manually changed read counts. It makes more sense this way instead
+    /// of updating the value every time the read count changes. Makes managing the
+    /// existing novels much nicer.
+    pub last_read: i64,
 }
 
 impl Default for NovelSettings {
@@ -470,18 +473,18 @@ impl Default for NovelSettings {
             window_titles: None,
             file: None,
             notes: None,
-            last_updated: Local::now().timestamp(),
+            last_read: Local::now().timestamp(),
         }
     }
 }
 
 impl NovelSettings {
-    pub fn last_updated_string(&self) -> String {
-        if self.last_updated == 0 {
+    pub fn last_read_string(&self) -> String {
+        if self.last_read == 0 {
             return "Never".to_string();
         }
 
-        let dt = Utc.timestamp(self.last_updated, 0);
+        let dt = Utc.timestamp(self.last_read, 0);
         return dt.format("%d %B %Y, %H:%M:%S").to_string();
     }
 

@@ -142,7 +142,7 @@ pub enum Column {
     VolumesRead,
     ChaptersAvailable,
     Score,
-    LastUpdate,
+    LastRead,
 }
 
 impl Column {
@@ -157,7 +157,7 @@ impl Column {
             7 => Column::VolumesRead,
             8 => Column::ChaptersAvailable,
             9 => Column::Score,
-            10 => Column::LastUpdate,
+            10 => Column::LastRead,
             _ => Column::Title,
         }
     }
@@ -264,22 +264,22 @@ impl Lists {
         let lists = Lists::default();
 
         // Set sort function for datetime (last update) column
-        let last_update_column_id = Column::LastUpdate as u32;
+        let last_read_column_id = Column::LastRead as u32;
         lists
             .reading
-            .set_sort_func(SortColumn::Index(last_update_column_id), list_sort_datetime);
+            .set_sort_func(SortColumn::Index(last_read_column_id), list_sort_datetime);
         lists
             .plan_to_read
-            .set_sort_func(SortColumn::Index(last_update_column_id), list_sort_datetime);
+            .set_sort_func(SortColumn::Index(last_read_column_id), list_sort_datetime);
         lists
             .on_hold
-            .set_sort_func(SortColumn::Index(last_update_column_id), list_sort_datetime);
+            .set_sort_func(SortColumn::Index(last_read_column_id), list_sort_datetime);
         lists
             .completed
-            .set_sort_func(SortColumn::Index(last_update_column_id), list_sort_datetime);
+            .set_sort_func(SortColumn::Index(last_read_column_id), list_sort_datetime);
         lists
             .dropped
-            .set_sort_func(SortColumn::Index(last_update_column_id), list_sort_datetime);
+            .set_sort_func(SortColumn::Index(last_read_column_id), list_sort_datetime);
 
         lists
     }
@@ -554,7 +554,7 @@ impl NovelList {
                 (Column::VolumesRead as u32, &novel.settings.content_read.volumes),
                 (Column::ChaptersAvailable as u32, &novel.content()),
                 (Column::Score as u32, &novel.settings.score),
-                (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
+                (Column::LastRead as u32, &novel.settings.last_read_string()),
             ];
 
             self.counts[novel.settings.list_status.to_i32() as usize] =
@@ -616,7 +616,7 @@ impl NovelList {
             (Column::VolumesRead as u32, &novel.settings.content_read.volumes),
             (Column::ChaptersAvailable as u32, &novel.content()),
             (Column::Score as u32, &novel.settings.score),
-            (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
+            (Column::LastRead as u32, &novel.settings.last_read_string()),
         ];
 
         self.counts[novel.settings.list_status.to_i32() as usize] =
@@ -759,8 +759,8 @@ impl NovelList {
             list.set_value(iter, Column::Score as u32, &novel.settings.score.to_value());
             list.set_value(
                 iter,
-                Column::LastUpdate as u32,
-                &novel.settings.last_updated_string().to_value(),
+                Column::LastRead as u32,
+                &novel.settings.last_read_string().to_value(),
             );
         }
 
@@ -834,8 +834,8 @@ fn list_actions(
 /// Sort function for novel lists which sorts the `Column::LastUpdate` column by turning
 /// the datetime string into a timemstamp and then comparing the values.
 pub fn list_sort_datetime(model: &gtk::TreeModel, a_iter: &gtk::TreeIter, b_iter: &gtk::TreeIter) -> Ordering {
-    let date_a = model.value(a_iter, Column::LastUpdate as i32).get::<String>().unwrap();
-    let date_b = model.value(b_iter, Column::LastUpdate as i32).get::<String>().unwrap();
+    let date_a = model.value(a_iter, Column::LastRead as i32).get::<String>().unwrap();
+    let date_b = model.value(b_iter, Column::LastRead as i32).get::<String>().unwrap();
 
     let dt_a = NaiveDateTime::parse_from_str(&date_a, "%d %B %Y, %H:%M:%S").unwrap();
     let dt_b = NaiveDateTime::parse_from_str(&date_b, "%d %B %Y, %H:%M:%S").unwrap();
@@ -1288,15 +1288,15 @@ pub fn add_columns(list_index: i32, tree: &gtk::TreeView, app_runtime: AppRuntim
             0.0,
         );
     }
-    if settings.list.visible_columns[Column::LastUpdate as usize] {
+    if settings.list.visible_columns[Column::LastRead as usize] {
         add_column(
             &app_runtime,
             tree,
             list_index,
-            &fl!("column-last-update"),
-            Column::LastUpdate,
+            &fl!("column-last-read"),
+            Column::LastRead,
             *settings.list.column_width[list_index as usize]
-                .get(&(Column::LastUpdate as i32))
+                .get(&(Column::LastRead as i32))
                 .unwrap_or(&160),
             0.0,
         );

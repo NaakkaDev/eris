@@ -47,7 +47,7 @@ column-volumes-read = Volumes read
 column-side-stories-read = Side stories read
 column-availability = Availability
 column-score = Score
-column-last-update = Last update
+column-last-read = Last read
 column-detail = Detail
 
 action-nothing = Nothing
@@ -184,6 +184,7 @@ novel-reading-file = Reading file
 novel-rec-keywords = Recognition keywords
 novel-notes = Notes
 
+novel-last-update-label = Last update
 novel-update-label =
     Update data from the source, e.g. novelupdates.com.
     Will override any manual edits made to the novel information.

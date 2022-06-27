@@ -50,7 +50,7 @@ impl AppOp {
         let chapter_num = chapter_read.chapter;
         let side_story_num = chapter_read.side;
         let mut novel = chapter_read.novel;
-        let exact_num = chapter_read.exact_num;
+        let manual_change = chapter_read.exact_num;
 
         if (novel.settings.content_read.chapters - chapter_num).abs() < f32::EPSILON
             && novel.settings.content_read.volumes == volume_num
@@ -68,7 +68,7 @@ impl AppOp {
         let data = NovelRecognitionData::new(volume_num, chapter_num, side_story_num, None, String::new(), false);
 
         // Updated novel instance with correct chapter number
-        novel = self.reading_novel(&mut novel, &data, exact_num);
+        novel = self.reading_novel(&mut novel, &data, manual_change);
         self.ui.update_currently_reading(&novel);
     }
 
@@ -311,7 +311,7 @@ impl AppOp {
                         reading_url,
                         window_titles: keywords,
                         file: None,
-                        last_updated: Local::now().timestamp(),
+                        last_read: Local::now().timestamp(),
                     };
 
                     // Add novel to db and UI
@@ -463,13 +463,13 @@ impl AppOp {
                 keywords.retain(|k| !k.is_empty());
             }
 
-            // Refrain from updating the `last_updated` value when manually
+            // Refrain from updating the `last_read` value when manually
             // editing the novel settings or the novels in the list
             // jump around if they are sorted by last updated.
             // (Take the old value and use it in the new novel settings)
-            let last_updated = novel.settings.last_updated;
+            let last_read = novel.settings.last_read;
             novel.settings = novel_settings;
-            novel.settings.last_updated = last_updated;
+            novel.settings.last_read = last_read;
             novel = self.update_novel_in_db(novel.clone());
 
             if old_iter.is_some() {
@@ -522,11 +522,16 @@ impl AppOp {
         mut novel: Novel,
         old_iter: Option<gtk::TreeIter>,
         chapter_title: Option<String>,
+        manual_change: bool,
     ) -> Novel {
         debug!("appop::edit_novel_chapters_read_count");
 
         let move_novel = old_iter.is_some();
-        novel.settings.last_updated = Local::now().timestamp();
+        // Only change the last read value if the chapter read count change
+        // is from the novel recognition
+        if !manual_change {
+            novel.settings.last_read = Local::now().timestamp();
+        }
 
         let novel = self.update_novel_in_db(novel);
         self.ui.lists.list_update(&novel);
@@ -818,7 +823,7 @@ impl AppOp {
     }
 
     /// Reading a novel so update the given `Novel` data and return it.
-    pub fn reading_novel(&mut self, novel: &mut Novel, data: &NovelRecognitionData, exact_num: bool) -> Novel {
+    pub fn reading_novel(&mut self, novel: &mut Novel, data: &NovelRecognitionData, manual_change: bool) -> Novel {
         debug!("appop:reading_novel");
 
         let volume_num = data.volume;
@@ -845,7 +850,7 @@ impl AppOp {
             }
         }
 
-        let mut new_chapter_read_num = if exact_num {
+        let mut new_chapter_read_num = if manual_change {
             chapter_num
         } else if data.chapter == 0.0 && data.reading && data.chapter_title.is_some() {
             // Add 1 to the chapters read number since something
@@ -860,7 +865,7 @@ impl AppOp {
             new_chapter_read_num = 0.0;
         }
 
-        let mut new_side_story_num = if exact_num {
+        let mut new_side_story_num = if manual_change {
             side_story_num
         } else {
             side_story_num - (read_modifier as i32)
@@ -893,7 +898,7 @@ impl AppOp {
 
         // Do nothing if the chapter number being read is less or same as
         // currently saved chapter read number and same for volume
-        if !exact_num
+        if !manual_change
             && novel.settings.content_read.chapters >= new_chapter_read_num
             && novel.settings.content_read.volumes >= volume_num
             && novel.settings.content_read.side_stories >= new_side_story_num
@@ -904,7 +909,7 @@ impl AppOp {
 
         // If the numbers are not set by user (`exact_num` = probably set by user)
         // then make sure that the automation does not go backwards in case of a derp
-        if exact_num {
+        if manual_change {
             novel.settings.content_read.chapters = new_chapter_read_num;
             novel.settings.content_read.volumes = volume_num;
             novel.settings.content_read.side_stories = new_side_story_num;
@@ -930,7 +935,7 @@ impl AppOp {
         // Check if the novel should be moved to "reading" status
         // Only move novel to reading list from plan to read list
         // Do not move if the new chapter number was manually changed
-        let move_to_reading = novel.settings.list_status == ListStatus::PlanToRead && !exact_num;
+        let move_to_reading = novel.settings.list_status == ListStatus::PlanToRead && !manual_change;
 
         // Change the list status to `Completed` if all the chapters have been read.
         // Should never work for `OnGoing` novels.
@@ -969,7 +974,12 @@ impl AppOp {
                     }
 
                     // Update the chapters read count
-                    return self.edit_novel_chapters_read_count(novel.clone(), old_iter, data.chapter_title.clone());
+                    return self.edit_novel_chapters_read_count(
+                        novel.clone(),
+                        old_iter,
+                        data.chapter_title.clone(),
+                        manual_change,
+                    );
                 }
             }
         }

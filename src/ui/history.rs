@@ -169,7 +169,7 @@ pub fn add_history_columns(_model: &gtk::ListStore, treeview: &gtk::TreeView) {
         let column = cascade! {
             gtk::TreeViewColumn::new();
             ..pack_start(&renderer, true);
-            ..set_title(&fl!("column-last-update"));
+            ..set_title(&fl!("novel-last-update-label"));
             ..add_attribute(&renderer, "text", HistoryColumn::Time as i32);
             ..set_sort_order(gtk::SortType::Descending);
             ..set_sort_column_id(HistoryColumn::Time as i32);

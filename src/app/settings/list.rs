@@ -64,7 +64,7 @@ pub struct Sorting {
 impl Default for Sorting {
     fn default() -> Self {
         Sorting {
-            column_id: Column::LastUpdate as u32,
+            column_id: Column::LastRead as u32,
             is_sort_indicator: true,
             sort_order: 0,
         }

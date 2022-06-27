@@ -103,7 +103,7 @@ impl SettingsDialog {
         builder.checkbutton_i18n("viscol_side", &fl!("column-side-stories-read"));
         builder.checkbutton_i18n("viscol_avail", &fl!("column-availability"));
         builder.checkbutton_i18n("viscol_score", &fl!("column-score"));
-        builder.checkbutton_i18n("viscol_last", &fl!("column-last-update"));
+        builder.checkbutton_i18n("viscol_last", &fl!("column-last-read"));
         builder.checkbutton_i18n("first_tab_always_checkbox", &fl!("first-tab-always"));
         builder.checkbutton_i18n("novel_recognition_enabled_checkbutton", &fl!("yes"));
         builder.checkbutton_i18n("novel_recognition_autocomplete_ongoing", &fl!("yes"));
@@ -231,7 +231,7 @@ impl SettingsDialog {
                 Column::SideStoriesRead => viscol_side.set_active(*col),
                 Column::ChaptersAvailable => viscol_avail.set_active(*col),
                 Column::Score => viscol_score.set_active(*col),
-                Column::LastUpdate => viscol_last.set_active(*col),
+                Column::LastRead => viscol_last.set_active(*col),
                 _ => {}
             }
         }

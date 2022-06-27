@@ -86,6 +86,10 @@ impl NovelDialog {
         builder.label_i18n("novel_action_update_label", &fl!("novel-update-label"));
         builder.label_i18n("novel_action_edit_label", &fl!("novel-edit-label"));
         builder.label_i18n("novel_action_delete_label", &fl!("novel-delete-label"));
+        builder.label_i18n(
+            "novel_setting_last_update_label",
+            &(fl!("novel-last-update-label") + ":"),
+        );
         builder.label_i18n("actions_tab_label", &fl!("novel-actions-tab"));
         builder.label_i18n("novel_status_edit_label", &(fl!("status") + ":"));
         builder.label_i18n("novel_volumes_edit_label", &(fl!("volumes") + ":"));
@@ -253,7 +257,7 @@ impl NovelDialog {
                 reading_url,
                 window_titles: novel_keywords,
                 file: filepath,
-                last_updated: Local::now().timestamp(),
+                last_read: Local::now().timestamp(),
             };
 
             match response_type {

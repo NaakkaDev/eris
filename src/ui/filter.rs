@@ -32,8 +32,8 @@ impl FilterList {
         treeview.set_search_entry(Some(&entry));
         treeview.set_model(Some(&model));
 
-        let last_update_column_id = Column::LastUpdate as u32;
-        list.set_sort_func(SortColumn::Index(last_update_column_id), list_sort_datetime);
+        let last_read_column_id = Column::LastRead as u32;
+        list.set_sort_func(SortColumn::Index(last_read_column_id), list_sort_datetime);
 
         FilterList {
             treeview,
@@ -183,7 +183,7 @@ impl FilterList {
                 ),
                 (Column::ChaptersAvailable as u32, &novel.content()),
                 (Column::Score as u32, &novel.settings.score),
-                (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
+                (Column::LastRead as u32, &novel.settings.last_read_string()),
             ];
 
             self.list.set(&self.list.append(), &values);
@@ -205,7 +205,7 @@ impl FilterList {
             ),
             (Column::ChaptersAvailable as u32, &novel.content()),
             (Column::Score as u32, &novel.settings.score),
-            (Column::LastUpdate as u32, &novel.settings.last_updated_string()),
+            (Column::LastRead as u32, &novel.settings.last_read_string()),
         ];
 
         self.list.insert_with_values(Some(0), &values);
@@ -252,8 +252,8 @@ impl FilterList {
                 .set_value(iter, Column::Score as u32, &novel.settings.score.to_value());
             self.list.set_value(
                 iter,
-                Column::LastUpdate as u32,
-                &novel.settings.last_updated_string().to_value(),
+                Column::LastRead as u32,
+                &novel.settings.last_read_string().to_value(),
             );
         }
     }
