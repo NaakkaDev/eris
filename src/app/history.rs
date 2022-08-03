@@ -6,6 +6,7 @@ use anyhow::Context;
 use bincode::{deserialize_from, serialize_into};
 use chrono::{Local, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
+use std::fmt::Write as _;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
@@ -138,17 +139,17 @@ impl NovelHistoryItem {
                 if let Some(content) = self.content.as_ref() {
                     let mut content_string = String::new();
                     if content.volumes > 0 {
-                        content_string.push_str(&format!("{} {} ", fl!("volume"), content.volumes));
+                        let _ = write!(content_string, "{} {}", fl!("volume"), content.volumes);
                     }
                     if content.chapters > 0.0 {
                         if let Some(title) = &self.named_chapter {
-                            content_string.push_str(&format!("{} {} - {} ", fl!("chapter"), content.chapters, title));
+                            let _ = write!(content_string, "{} {} - {} ", fl!("chapter"), content.chapters, title);
                         } else {
-                            content_string.push_str(&format!("{} {} ", fl!("chapter"), content.chapters));
+                            let _ = write!(content_string, "{} {} ", fl!("chapter"), content.chapters);
                         }
                     }
                     if content.side_stories > 0 {
-                        content_string.push_str(&format!("{} {} ", fl!("side-story"), content.side_stories));
+                        let _ = write!(content_string, "{} {} ", fl!("side-story"), content.side_stories);
                     }
                     return content_string;
                 }

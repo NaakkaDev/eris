@@ -9,6 +9,7 @@ use gdk::pango::WrapMode;
 use gtk::gdk_pixbuf::Pixbuf;
 use gtk::prelude::*;
 use gtk::{Align, IconSize, Orientation};
+use std::fmt::Write as _;
 
 impl UI {
     pub fn show_reading_not(&self) {
@@ -36,25 +37,23 @@ impl UI {
 
         let mut prev_read = String::new();
         if novel.settings.content_read.volumes > 0 {
-            prev_read.push_str(&format!(
-                "{} {}\n",
-                &fl!("volume"),
-                &novel.settings.content_read.volumes
-            ));
+            let _ = writeln!(prev_read, "{} {}", &fl!("volume"), &novel.settings.content_read.volumes);
         }
         if novel.settings.content_read.chapters > 0.0 {
-            prev_read.push_str(&format!(
-                "{} {}\n",
+            let _ = writeln!(
+                prev_read,
+                "{} {}",
                 &fl!("chapter"),
                 &novel.settings.content_read.chapters
-            ));
+            );
         }
         if novel.settings.content_read.side_stories > 0 {
-            prev_read.push_str(&format!(
-                "{} {}\n",
+            let _ = writeln!(
+                prev_read,
+                "{} {}",
                 &fl!("side-story"),
                 &novel.settings.content_read.side_stories
-            ));
+            );
         }
         previously_read_chapter_label.set_text(&prev_read);
         // Button is disabled by default so make it clickable

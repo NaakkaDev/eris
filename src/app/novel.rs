@@ -6,6 +6,7 @@ use gdk_pixbuf::Pixbuf;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::fmt::Write as _;
 use std::io::Cursor;
 use std::ops::Index;
 use std::path::PathBuf;
@@ -364,20 +365,20 @@ impl Novel {
         let mut content = String::new();
 
         if self.content.volumes > 0 {
-            content.push_str(&format!("{} ", self.content.volumes));
-            content.push_str(&fl!("volumes").to_lowercase());
+            let _ = write!(content, "{} ", self.content.volumes);
+            let _ = write!(content, "{}", &fl!("volumes").to_lowercase());
         }
         if self.content.chapters > 0.0 {
             if self.content.volumes > 0 {
                 content.push_str(" / ");
             }
-            content.push_str(&format!("{} ", self.content.chapters));
-            content.push_str(&fl!("chapters").to_lowercase());
+            let _ = write!(content, "{} ", self.content.chapters);
+            let _ = write!(content, "{}", &fl!("chapters").to_lowercase());
         }
         if self.content.side_stories > 0 {
             content.push_str(" & ");
-            content.push_str(&format!("{} ", self.content.side_stories));
-            content.push_str(&fl!("side-stories").to_lowercase());
+            let _ = write!(content, "{} ", self.content.side_stories);
+            let _ = write!(content, "{}", &fl!("side-stories").to_lowercase());
         }
 
         content
