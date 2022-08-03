@@ -11,11 +11,21 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            target
+          key: linux-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            linux-${{github.ref}}-${{github.sha}}
+
       - name: Build
         run: |
           sudo apt-get update
           sudo apt install libgtk-3-dev -y
           cargo build --release
+
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -29,6 +39,8 @@ jobs:
     name: Publish Windows binaries
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/checkout@v2
+        
       - uses: actions/cache@v2
         with:
           path: |
@@ -37,14 +49,12 @@ jobs:
           restore-keys: |
             windows-${{github.ref}}-${{github.sha}}
 
-      - name: Install gtk3, mingw64, unzip, zip and wget
+      - name: Build
         run: |
           sudo apt-get update
           sudo apt install mingw-w64 binutils-mingw-w64-x86-64 libgtk-3-dev unzip zip wget -y
           sudo ln -s /usr/bin/x86_64-w64-mingw32-windres /usr/bin/windres
 
-      - name: Build release cc
-        run: |
           # 1.60.0 because of https://github.com/mxre/winres/issues/40
           rustup install 1.60.0
           rustup +1.60.0 target add x86_64-pc-windows-gnu
@@ -63,6 +73,7 @@ jobs:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0 -D warnings"
         if: ${{matrix.type == 'release'}}
+
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
