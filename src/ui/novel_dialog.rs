@@ -554,8 +554,6 @@ impl NovelDialog {
     }
 
     pub fn update_edit(&self, builder: &gtk::Builder, novel: &Novel) {
-        println!("============== {:?} ==============", novel.status.to_string());
-
         let novel_title_edit = builder.get::<gtk::Entry>("novel_title_edit");
         let image = builder.get::<gtk::Image>("novel_image_edit");
         let novel_alt_title_edit = builder.get::<gtk::TextView>("novel_alt_title_edit");

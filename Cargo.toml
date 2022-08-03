@@ -20,9 +20,9 @@ winres = "0.1"
 window_titles = { git = "https://github.com/HiruNya/window_titles.git", rev = "924feffac93c9ac7238d6fa5c39c1453815a0408" }
 const_format = "0.2.22"
 dirs = "4.0.0"
-parking_lot = "0.11.1"
+parking_lot = "0.12.1"
 clokwerk = "0.3.4"
-sanitize-filename = "0.3.0"
+sanitize-filename = "0.4.0"
 chrono = { version = "0.4.19", features = ["serde"] }
 cascade = "1.0.0"
 regex = "1.5"
@@ -30,8 +30,7 @@ rust-embed = "6.2.0"
 epub = { git = "https://github.com/danigm/epub-rs" }
 serde_json = "1.0"
 lazy_static = "1.4.0"
-ngrammatic = "0.3.4"
-futures = "0.3.21"
+ngrammatic = "0.4.0"
 
 # Encode/Decode
 bincode = "1.3.2"
@@ -43,7 +42,7 @@ ureq = { version = "2.3.0", features = ["json"] }
 select = "0.6.0-alpha.1"
 url = "2.2.2"
 slug = "0.1.4"
-webbrowser = "0.5.5"
+webbrowser = "0.7.1"
 
 # Errors
 thiserror = "1.0"

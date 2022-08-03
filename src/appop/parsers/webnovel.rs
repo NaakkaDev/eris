@@ -192,7 +192,6 @@ impl ParseNovel for Webnovel {
         // Check if the `Vec` of `String`s contains "Chapters"
         // If then assume the previous item has the amount of chapters
         if strings.contains(&"Chapters".to_string()) {
-            println!("===== {:?}", strings);
             return strings
                 .get(strings.iter().position(|s| s == "Chapters").unwrap() - 1)
                 .unwrap()

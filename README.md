@@ -12,7 +12,7 @@ Heavy visual inspiration from [taiga](https://github.com/erengy/taiga) anime tra
 
 ## Features
 ### Adding webnovels to Eris
-Webnovels can be added from a few sources:
+Webnovels can be added from the following sources:
 - [https://www.novelupdates.com](https://www.novelupdates.com)
 - [https://www.royalroad.com](https://www.royalroad.com)
 - [https://www.scribblehub.com](https://www.scribblehub.com)

@@ -48,5 +48,5 @@ strip target/x86_64-pc-windows-gnu/release/eris.exe
 cp target/x86_64-pc-windows-gnu/release/eris.exe "$BIN_DIR"
 # Create Windows shortcut to the exe file
 cp build/eris.exe.lnk "$APP_DIR"
-
+# Zip the contents of eris_app directory into eris_app.zip
 zip -r eris_app.zip ./eris_app
