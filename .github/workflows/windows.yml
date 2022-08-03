@@ -37,7 +37,9 @@ jobs:
 
       - name: Build release cc
         run: |
-          rustup target add x86_64-pc-windows-gnu
+          # 1.60.0 because of https://github.com/mxre/winres/issues/40
+          rustup install 1.60.0
+          rustup +1.60.0 target add x86_64-pc-windows-gnu
 
           # <3
           wget https://github.com/qarmin/gtk_library_store/releases/download/3.24.0/mingw64.zip
