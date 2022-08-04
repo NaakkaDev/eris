@@ -17,7 +17,7 @@ winreg = "0.10"
 winres = "0.1"
 
 [dependencies]
-window_titles = { git = "https://github.com/HiruNya/window_titles.git", rev = "924feffac93c9ac7238d6fa5c39c1453815a0408" }
+window_titles = { git = "https://github.com/Temeez/window_titles.git", rev = "cdd7b50ca119f596c7c08afe78fe6320a0ea14b3" }
 const_format = "0.2.22"
 dirs = "4.0.0"
 parking_lot = "0.12.1"
