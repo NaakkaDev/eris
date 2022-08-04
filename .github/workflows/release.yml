@@ -65,3 +65,25 @@ jobs:
           asset_name: eris-windows-amd64.zip
           tag: ${{ github.ref }}
           overwrite: true
+
+  build-macos:
+    name: Publish MacOS binaries
+    runs-on: macos-latest
+    steps:
+      - name: Build MacOS
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install rust gtk+3
+          cargo build --release --bin eris
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0 -D warnings"
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/eris
+          asset_name: eris-macos
+          tag: ${{ github.ref }}
+          overwrite: true
